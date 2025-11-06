@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Board Builder — Boards • Player Stats • Wheels • Rules (Pro)</title>
+<style>
+  :root{
+    --bg:#0f1720; --panel:#121a2b; --ink:#e6eef6; --muted:#9fb0c3;
+    --accent:#7dd3fc; --line:#28324a; --highlight:#97eaff; --danger:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:#0f1720; color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,Arial,sans-serif}
+
+  .app{display:grid; grid-template-rows:auto auto auto 1fr; height:100%}
+
+  /* Toolbar */
+  .toolbar{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    padding:10px 14px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--line);
+    position:sticky; top:0; z-index:7; backdrop-filter: blur(6px);
+  }
+  .toolbar .group{display:flex; gap:8px; align-items:center; background:var(--panel); border:1px solid var(--line); padding:8px; border-radius:12px}
+  button, .file-label{
+    background:#12192d; color:var(--ink); border:1px solid var(--line); padding:8px 10px; border-radius:10px; cursor:pointer; white-space:nowrap
+  }
+  button.active{outline:2px solid var(--accent)}
+  button:hover, .file-label:hover{background:#17233d}
+  input[type="text"], input[type="number"], textarea, select{
+    background:#0f152a; color:var(--ink); border:1px solid var(--line); padding:8px 10px; border-radius:8px; min-width:140px
+  }
+  textarea{width:100%; min-height:100px; resize:vertical}
+  .file-input{display:none}
+  .hint{color:var(--muted); font-size:12px; margin-left:6px}
+
+  /* Primary tabs */
+  .primarytabs{
+    display:flex; gap:8px; align-items:center; padding:8px 12px;
+    border-bottom:1px solid var(--line); background:rgba(255,255,255,0.02);
+    position:sticky; top:56px; z-index:6; overflow:auto
+  }
+  .ptab{display:flex; gap:8px; align-items:center; padding:8px 14px; border:1px solid var(--line);
+    background:#131c33; border-radius:12px; cursor:pointer; user-select:none; font-weight:600}
+  .ptab.active{background:#17233f; outline:2px solid var(--accent)}
+
+  /* World tabs (boards only) */
+  .tabsbar{
+    display:flex; gap:8px; align-items:center; padding:8px 12px; border-bottom:1px solid var(--line);
+    background:rgba(255,255,255,0.02); position:sticky; top:104px; z-index:5; overflow:auto
+  }
+  .tab{display:flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--line); background:#131c33; border-radius:12px; cursor:pointer; user-select:none}
+  .tab.active{background:#17233f; outline:2px solid var(--accent)}
+  .tab .name{max-width:200px; overflow:hidden; text-overflow:ellipsis}
+  .tab .x{font-weight:700; opacity:.7}
+  .tab .x:hover{opacity:1; color:var(--danger)}
+  .tab.plus{font-weight:700; padding:8px 10px}
+
+  /* Views */
+  .canvas-wrap{position:relative; overflow:auto; background:#0b1120; border-top:1px solid var(--line)}
+  svg{width:2400px; height:1400px; display:block}
+  .badge{
+    position:absolute; left:12px; bottom:12px; background:rgba(0,0,0,.35); color:#bfeaff; padding:6px 10px; border-radius:10px; font-size:12px; border:1px solid var(--line)
+  }
+  .players-panel,.wheels-panel,.rules-panel{display:none; padding:16px; overflow:auto; border-top:1px solid var(--line)}
+  .panel-hint{font-size:12px; color:var(--muted); margin:0 0 12px}
+
+  /* Nodes & edges */
+  .node .hit{fill:transparent; stroke:transparent; stroke-width:20px; cursor:grab}
+  .node:hover .shadow{filter:url(#shadow)}
+  .node.selected .outline{stroke:var(--highlight); stroke-dasharray:4 4}
+  .node text{user-select:none; pointer-events:none}
+  .connector{stroke:#6aa9ff; stroke-width:3.5; marker-end:url(#arrow); cursor:pointer}
+  .connector.oneway{marker-end:url(#arrow)}
+  .connector.teleport{stroke:#a786ff; stroke-dasharray:6 6; marker-end:url(#dot)}
+  .connector.selected{stroke:var(--highlight)}
+  .edge-editor{position:absolute; right:12px; bottom:12px; background:rgba(15,21,42,.85); border:1px solid var(--line); padding:10px; border-radius:12px; display:none; gap:8px}
+  .edge-editor .row{display:flex; gap:8px; align-items:center}
+
+  /* Player Stats */
+  .grid{display:grid; gap:16px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px}
+  .row{display:flex; gap:12px; align-items:center}
+  .avatar{width:56px; height:56px; border-radius:999px; background:#0f152a; border:1px solid var(--line); object-fit:cover}
+  .grow{flex:1}
+  .label{font-size:12px; color:var(--muted); margin-bottom:4px}
+
+  /* Wheels */
+  .wflex{display:grid; grid-template-columns: 360px 1fr; gap:16px; align-items:start}
+  .wc{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:14px}
+  .wheel-list{max-height:420px; overflow:auto; border:1px solid var(--line); border-radius:12px; padding:8px; background:#0f152a}
+  .wheel-item{display:flex; justify-content:space-between; gap:8px; align-items:center; padding:8px; border-radius:8px; cursor:pointer}
+  .wheel-item.active{outline:2px solid var(--accent); background:#17233f}
+  canvas{background:#0a1326; border:1px solid var(--line); border-radius:16px}
+
+  /* Counter pill */
+  .counter{fill:#10233f; stroke:#2b3b66; stroke-width:1.5}
+  .counter-text{fill:#cfe7ff; font-weight:700}
+  .counter-btn{fill:#183055; cursor:pointer}
+  .counter-btn:hover{fill:#1e3b6b}
+
+  /* Grid toggle badge */
+  .cheats{position:absolute; right:12px; bottom:12px; background:rgba(0,0,0,.35); color:#bfeaff; padding:6px 10px; border-radius:10px; font-size:12px; border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="group">
+      <button id="selectModeBtn" class="active">Select / Drag</button>
+      <button id="connectModeBtn">Connect</button>
+      <span class="hint">Double-click a space to edit (title, rules, color, icon, tags, portal…)</span>
+    </div>
+
+    <div class="group">
+      <button id="addPlayerBtn">+ Player</button>
+      <label class="file-label">
+        <input id="playerImageInput" class="file-input" type="file" accept="image/*" />
+        Player Image…
+      </label>
+      <input id="playerName" type="text" placeholder="Player name" />
+      <input id="playerSize" type="number" min="40" max="240" value="96" title="Diameter" />
+    </div>
+
+    <div class="group">
+      <button id="addSpaceBtn">+ Space</button>
+      <input id="spaceTitle" type="text" placeholder="Space title" />
+      <input id="spaceNote" type="text" placeholder="Rule (hover)" />
+      <input id="spaceSize" type="number" min="60" max="260" value="180" title="Width" />
+    </div>
+
+    <div class="group">
+      <button id="deleteBtn">Delete Selected</button>
+      <button id="exportBtn">Export JSON</button>
+      <label class="file-label">
+        <input id="importInput" class="file-input" type="file" accept="application/json" />
+        Import JSON…
+      </label>
+    </div>
+
+    <div class="group">
+      <button id="snapshotBtn">Snapshot</button>
+      <select id="versionsSelect" title="Versions"></select>
+      <button id="restoreBtn">Restore</button>
+      <button id="exportPngBtn">Export PNG</button>
+    </div>
+
+    <div class="group">
+      <label>BG:</label>
+      <select id="bgType">
+        <option value="gradient">Gradient</option>
+        <option value="grid">Grid</option>
+        <option value="image">Image</option>
+      </select>
+      <input id="gridSize" type="number" min="16" max="160" value="48" title="Grid size" />
+      <label class="file-label">
+        <input id="bgImageInput" class="file-input" type="file" accept="image/*" />
+        Background Image…
+      </label>
+      <span class="hint">G = grid, S = snap, ⌘/Ctrl+Z/Y = undo/redo, 1/2/3/4 tabs</span>
+    </div>
+  </div>
+
+  <!-- PRIMARY TABS -->
+  <div class="primarytabs">
+    <div id="boardsTab" class="ptab active">Boards</div>
+    <div id="playersTab" class="ptab">Player Stats</div>
+    <div id="wheelsTab" class="ptab">Wheels</div>
+    <div id="rulesTab" class="ptab">Rules</div>
+  </div>
+
+  <!-- WORLD TABS -->
+  <div id="worldTabs" class="tabsbar"></div>
+
+  <!-- BOARDS VIEW -->
+  <div id="boardsView" class="canvas-wrap">
+    <svg id="stage" viewBox="0 0 2400 1400" tabindex="0" aria-label="Board Canvas">
+      <defs>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.35"/>
+        </filter>
+        <!-- arrow & teleport markers -->
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#8ed0ff"></path>
+        </marker>
+        <marker id="dot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7">
+          <circle cx="5" cy="5" r="3" fill="#a786ff"></circle>
+        </marker>
+        <!-- grid pattern (updated live) -->
+        <pattern id="gridPat" width="48" height="48" patternUnits="userSpaceOnUse">
+          <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#1a2742" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect id="stageBG" x="0" y="0" width="2400" height="1400" fill="#0b1120"></rect>
+      <rect id="stageGrid" x="0" y="0" width="2400" height="1400" fill="url(#gridPat)" opacity="0"></rect>
+      <g id="connectionsLayer"></g>
+      <g id="nodesLayer"></g>
+    </svg>
+    <div class="badge" id="modeBadge">Mode: Select / Drag</div>
+    <div class="cheats" id="cheatsBadge">Grid: Off • Snap: Off</div>
+    <div class="edge-editor" id="edgeEditor">
+      <div class="row">
+        <label>Type</label>
+        <select id="edgeTypeSel">
+          <option value="normal">Normal</option>
+          <option value="oneway">One-way</option>
+          <option value="teleport">Teleport</option>
+        </select>
+        <input id="edgeLabel" type="text" placeholder="Label (cost/rule)">
+        <button id="edgeSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAYERS VIEW -->
+  <div id="playersView" class="players-panel">
+    <p class="panel-hint">Shows players from the current world. Edits save automatically and export with JSON.</p>
+    <div id="playersGrid" class="grid"></div>
+  </div>
+
+  <!-- WHEELS VIEW -->
+  <div id="wheelsView" class="wheels-panel">
+    <div class="wflex">
+      <div class="wc">
+        <div style="display:flex; gap:8px; margin-bottom:8px">
+          <button id="newWheelBtn">+ New Wheel</button>
+          <button id="dupWheelBtn">Duplicate</button>
+          <button id="delWheelBtn">Delete</button>
+        </div>
+        <div class="wheel-list" id="wheelList"></div>
+      </div>
+      <div class="wc">
+        <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px">
+          <input id="wheelName" type="text" placeholder="Wheel name" style="flex:1">
+          <button id="colorsBtn" title="Randomize colors">🎨</button>
+          <button id="shuffleBtn" title="Shuffle">🔀</button>
+          <button id="saveWheelBtn">Save</button>
+        </div>
+        <div class="panel-hint">Entries (one per line). Empty lines ignored.</div>
+        <textarea id="wheelEntries" placeholder="Alice&#10;Bob&#10;Charlie"></textarea>
+        <div style="display:flex; gap:16px; margin-top:12px; align-items:flex-start; flex-wrap:wrap">
+          <canvas id="wheelCanvas" width="420" height="420"></canvas>
+          <div>
+            <div style="display:flex; gap:8px; align-items:center"><label class="panel-hint">Spin (s)</label><input id="spinSeconds" type="number" min="1" max="20" value="5" style="width:80px"></div>
+            <button id="spinBtn" style="margin-top:6px">🎯 Spin</button>
+            <div id="spinResult" style="font-weight:700; margin-top:8px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="panel-hint">Wheels are saved per world and included in Export/Import JSON.</p>
+  </div>
+
+  <!-- RULES VIEW -->
+  <div id="rulesView" class="rules-panel">
+    <p class="panel-hint">Rules are saved per world and included in Export/Import JSON.</p>
+    <textarea id="rulesText" placeholder="Type any rules, house-variants, phase orders, scoring, etc. here…"></textarea>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ======= Short helpers =======
+  const $ = sel => document.querySelector(sel);
+  const uid = () => 'id-' + Math.random().toString(36).slice(2,10);
+  const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
+  const escapeHTML = s => (s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+  const debounce = (fn,ms=250)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; };
+  const deepCopy = obj => JSON.parse(JSON.stringify(obj));
+
+  // ======= DOM refs =======
+  const stage = $('#stage'), nodesLayer = $('#nodesLayer'), connectionsLayer = $('#connectionsLayer');
+  const stageBG = $('#stageBG'), stageGrid = $('#stageGrid');
+  const selectModeBtn = $('#selectModeBtn'), connectModeBtn = $('#connectModeBtn'), modeBadge = $('#modeBadge'), cheatsBadge = $('#cheatsBadge');
+  const tabsBar = $('#worldTabs');
+  const boardsTab = $('#boardsTab'), playersTab = $('#playersTab'), wheelsTab = $('#wheelsTab'), rulesTab = $('#rulesTab');
+  const boardsView = $('#boardsView'), playersView = $('#playersView'), wheelsView = $('#wheelsView'), rulesView = $('#rulesView');
+  const addPlayerBtn = $('#addPlayerBtn'), playerImageInput = $('#playerImageInput'), playerNameInput = $('#playerName'), playerSizeInput = $('#playerSize');
+  const addSpaceBtn = $('#addSpaceBtn'), spaceTitleInput = $('#spaceTitle'), spaceNoteInput = $('#spaceNote'), spaceSizeInput = $('#spaceSize');
+  const deleteBtn = $('#deleteBtn'), exportBtn = $('#exportBtn'), importInput = $('#importInput');
+  const snapshotBtn = $('#snapshotBtn'), versionsSelect = $('#versionsSelect'), restoreBtn = $('#restoreBtn'), exportPngBtn = $('#exportPngBtn');
+  const bgTypeSel = $('#bgType'), gridSizeInput = $('#gridSize'), bgImageInput = $('#bgImageInput');
+
+  // Edge editor
+  const edgeEditor = $('#edgeEditor'), edgeTypeSel = $('#edgeTypeSel'), edgeLabelInput = $('#edgeLabel'), edgeSaveBtn = $('#edgeSave');
+
+  // Player stats panel
+  const playersGrid = $('#playersGrid');
+
+  // Wheels panel
+  const wheelList = $('#wheelList'), newWheelBtn = $('#newWheelBtn'), dupWheelBtn = $('#dupWheelBtn'), delWheelBtn = $('#delWheelBtn');
+  const wheelName = $('#wheelName'), wheelEntries = $('#wheelEntries'), colorsBtn = $('#colorsBtn'), shuffleBtn = $('#shuffleBtn'), saveWheelBtn = $('#saveWheelBtn');
+  const wheelCanvas = $('#wheelCanvas'), spinBtn = $('#spinBtn'), spinSeconds = $('#spinSeconds'), spinResult = $('#spinResult');
+  const wctx = wheelCanvas.getContext('2d');
+
+  // Rules panel
+  const rulesText = $('#rulesText');
+
+  // ======= State =======
+  let worlds = [];
+  let currentWorldId = null;
+  let currentMode = 'select'; let selectedId = null; let connectFirst = null;
+  let primaryView = 'boards'; // 'boards'|'players'|'wheels'|'rules'
+  let history = [], redoStack = [];
+  const SAVE_KEY = 'bb_save_v1'; const VERSIONS_KEY = 'bb_versions_v1';
+
+  // wheel state
+  let currentWheelId = null, spinning = null;
+
+  // grid/snap toggles
+  let showGrid = false, snapOn = false;
+
+  // ======= Measuring text for SVG =======
+  const measureHost = document.createElementNS('http://www.w3.org/2000/svg','text');
+  measureHost.setAttribute('visibility','hidden'); measureHost.setAttribute('opacity','0'); stage.appendChild(measureHost);
+  function measureTextWidth(textEl, s){
+    measureHost.setAttribute('font-size', textEl.getAttribute('font-size') || 14);
+    measureHost.setAttribute('font-weight', textEl.getAttribute('font-weight') || '400');
+    measureHost.setAttribute('font-family', getComputedStyle(document.body).fontFamily || 'Inter, Arial, sans-serif');
+    measureHost.setAttribute('text-anchor', textEl.getAttribute('text-anchor') || 'start');
+    const t = document.createElementNS('http://www.w3.org/2000/svg','tspan'); t.textContent = s || ''; measureHost.appendChild(t);
+    const w = t.getComputedTextLength(); measureHost.removeChild(t); return w;
+  }
+  function hyphenateWord(textEl, word, maxWidth){
+    const parts = []; let start = 0;
+    while(start < word.length){
+      let lo=1, hi=word.length-start, best=1;
+      while(lo<=hi){
+        const mid=(lo+hi)>>1, slice=word.slice(start,start+mid)+(start+mid<word.length?'-':'');
+        if(measureTextWidth(textEl, slice)<=maxWidth){ best=mid; lo=mid+1; } else { hi=mid-1; }
+      }
+      const chunk=word.slice(start,start+best)+(start+best<word.length?'-':''); parts.push(chunk); start+=best;
+    }
+    return parts;
+  }
+  function breakLines(textEl, text, maxWidth){
+    const raw = (text||'').split(/\n/); const lines=[];
+    for(const paragraph of raw){
+      const words = paragraph.split(/\s+/).filter(Boolean); let line='';
+      for(let w of words){
+        if(measureTextWidth(textEl, w) > maxWidth){
+          const chunks=hyphenateWord(textEl,w,maxWidth);
+          for(const c of chunks){ const test=line? (line+' '+c):c; if(measureTextWidth(textEl,test)<=maxWidth){ line=test; } else { if(line) lines.push(line); line=c; } }
+          continue;
+        }
+        const test=line? (line+' '+w):w;
+        if(measureTextWidth(textEl,test)<=maxWidth){ line=test; } else { if(line) lines.push(line); line=w; }
+      }
+      if(line) lines.push(line);
+    }
+    return lines.length?lines:[''];
+  }
+  function renderLines(textEl, lines, gap){
+    while(textEl.firstChild) textEl.removeChild(textEl.firstChild);
+    const x = parseFloat(textEl.getAttribute('x'))||0; let y = parseFloat(textEl.getAttribute('y'))||0;
+    const size = parseFloat(textEl.getAttribute('font-size'))||14; const lineH=size+gap;
+    lines.forEach((ln,i)=>{ const t=document.createElementNS('http://www.w3.org/2000/svg','tspan'); t.setAttribute('x',x); t.setAttribute('y', y+i*lineH); t.setAttribute('text-anchor', textEl.getAttribute('text-anchor')||'start'); t.textContent=ln; textEl.appendChild(t); });
+  }
+  function fitTitle(textEl,text,maxWidth,startSize=20,minSize=12,gap=4){
+    for(let size=startSize; size>=minSize; size--){ textEl.setAttribute('font-size', size); textEl.setAttribute('font-weight','700'); const lines=breakLines(textEl,text,maxWidth); if(lines.length){ renderLines(textEl,lines,gap); return {lines,fontSize:size,lineGap:gap}; } }
+    const size=minSize; textEl.setAttribute('font-size', size); textEl.setAttribute('font-weight','700'); const lines=breakLines(textEl,text,maxWidth); renderLines(textEl,lines,gap); return {lines,fontSize:size,lineGap:gap};
+  }
+
+  // ======= Worlds =======
+  function getWorld(id=currentWorldId){ return worlds.find(w=>w.id===id); }
+  function ensureWorldDefaults(w){
+    if(!w.wheels) w.wheels=[];
+    if(!w.bg) w.bg={type:'gradient',gridSize:48,image:null};
+    if(typeof w.rules!=='string') w.rules='';
+    (w.nodes||[]).forEach(n=>{
+      if(n.type==='space' && typeof n.count!=='number') n.count=0;
+      if(n.type==='player' && n.stats===undefined) n.stats='';
+    });
+  }
+  function renderTabs(){
+    tabsBar.innerHTML=''; worlds.forEach(w=>{
+      const el=document.createElement('div'); el.className='tab'+(w.id===currentWorldId?' active':''); el.title=w.name;
+      el.innerHTML=`<span class="name">${escapeHTML(w.name)}</span><span class="x" title="Delete world" data-del="${w.id}">×</span>`;
+      el.addEventListener('click',e=>{ if(e.target.dataset.del) return; switchWorld(w.id); });
+      el.querySelector('.x').addEventListener('click',e=>{ e.stopPropagation(); deleteWorld(w.id); });
+      tabsBar.appendChild(el);
+    });
+    const plus=document.createElement('div'); plus.className='tab plus'; plus.textContent='+'; plus.title='New world'; plus.onclick=()=>newWorld(); tabsBar.appendChild(plus);
+  }
+  function newWorld(name){
+    const w={id:uid(), name:name||('World '+(worlds.length+1)), nodes:[], edges:[], wheels:[], bg:{type:'gradient', gridSize:48, image:null}, rules:''};
+    worlds.push(w); currentWorldId=w.id; selectedId=null; connectFirst=null; setMode('select'); pushHistory(); renderTabs(); render(); syncPrimaryTabs();
+  }
+  function switchWorld(id){ if(id===currentWorldId) return; currentWorldId=id; selectedId=null; connectFirst=null; setMode('select'); renderTabs(); render(); syncPrimaryTabs(); }
+  function deleteWorld(id){
+    if(worlds.length<=1){ alert('You need at least one world.'); return; }
+    const idx=worlds.findIndex(x=>x.id===id); if(idx===-1) return;
+    if(!confirm(`Delete "${worlds[idx].name}"?`)) return;
+    worlds.splice(idx,1); currentWorldId = worlds[Math.max(0, idx-1)]?.id || worlds[0].id; pushHistory(); renderTabs(); render(); syncPrimaryTabs();
+  }
+
+  // ======= Modes =======
+  function setMode(m){ currentMode=m; selectModeBtn.classList.toggle('active', m==='select'); connectModeBtn.classList.toggle('active', m==='connect'); modeBadge.textContent='Mode: '+(m==='select'?'Select / Drag':'Connect'); connectFirst=null; }
+  selectModeBtn.onclick=()=>setMode('select'); connectModeBtn.onclick=()=>setMode('connect');
+
+  // ======= Render (boards) =======
+  function el(tag, attrs){ const e=document.createElementNS('http://www.w3.org/2000/svg',tag); for(const k in attrs){ e.setAttribute(k, attrs[k]); } return e; }
+  function nodeCenter(n){ const h=(n.type==='space' && n.height)?n.height:n.size; return {cx:n.x+n.size/2, cy:n.y+h/2}; }
+
+  function applyBackground(){
+    const w=getWorld(); if(!w) return;
+    const bg=w.bg||{type:'gradient', gridSize:48, image:null};
+    $('#gridPat').setAttribute('width', bg.gridSize||48);
+    $('#gridPat').setAttribute('height', bg.gridSize||48);
+    if(bg.type==='gradient'){
+      stageBG.setAttribute('fill','url(#gradBG)');
+    } else if(bg.type==='grid'){
+      stageBG.setAttribute('fill','#0b1120'); 
+    } else {
+      stageBG.setAttribute('fill', bg.image? `url(${bg.image})` : '#0b1120');
+    }
+    stageGrid.setAttribute('opacity', showGrid? '1':'0');
+  }
+
+  // add gradient def once
+  const grad = document.createElementNS('http://www.w3.org/2000/svg','radialGradient');
+  grad.id='gradBG';
+  grad.innerHTML = `<stop offset="0%" stop-color="#0f1720"/><stop offset="100%" stop-color="#0b1120"/>`;
+  stage.querySelector('defs').appendChild(grad);
+
+  function render(){
+    const w=getWorld(); if(!w) return;
+    applyBackground();
+    nodesLayer.innerHTML=''; connectionsLayer.innerHTML='';
+
+    // edges
+    w.edges.forEach(e=>{
+      const a=w.nodes.find(n=>n.id===e.sourceId), b=w.nodes.find(n=>n.id===e.targetId); if(!a||!b) return;
+      const ca=nodeCenter(a), cb=nodeCenter(b);
+      const path=el('path',{class:`connector ${e.type||'normal'} ${selectedId===e.id?'selected':''}`, 'data-id':e.id});
+      const dx=cb.cx-ca.cx, c1x=ca.cx+dx*0.2, c1y=ca.cy, c2x=cb.cx-dx*0.2, c2y=cb.cy;
+      path.setAttribute('d', `M ${ca.cx} ${ca.cy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${cb.cx} ${cb.cy}`);
+      path.addEventListener('click', ev=>{ ev.stopPropagation(); select(e.id, 'edge'); });
+      connectionsLayer.appendChild(path);
+
+      if((e.label||'').trim()){
+        const midX=(ca.cx+cb.cx)/2, midY=(ca.cy+cb.cy)/2;
+        const tt=el('text',{x:midX, y:midY-6, 'text-anchor':'middle', fill:'#cfe7ff', 'font-size':'13', style:'pointer-events:none'}); tt.textContent=e.label; connectionsLayer.appendChild(tt);
+      }
+    });
+
+    // nodes
+    w.nodes.forEach(n=>{
+      const g=el('g',{class:'node'+(selectedId===n.id?' selected':''), 'data-id':n.id, transform:`translate(${n.x},${n.y})`});
+
+      if(n.type==='player'){
+        const outline=el('circle',{cx:n.size/2, cy:n.size/2, r:n.size/2+6, fill:'none', stroke:'#2a3558','stroke-width':'2', class:'outline'}); g.appendChild(outline);
+        const shadow=el('circle',{cx:n.size/2, cy:n.size/2, r:n.size/2, class:'shadow', fill:'#0f172a'}); g.appendChild(shadow);
+        const clipId='clip-'+n.id; const cp=el('clipPath',{id:clipId}); cp.appendChild(el('circle',{cx:n.size/2, cy:n.size/2, r:n.size/2})); stage.querySelector('defs')?.appendChild(cp);
+        const img=el('image',{x:0,y:0,width:n.size,height:n.size,'clip-path':`url(#${clipId})`}); img.setAttributeNS('http://www.w3.org/1999/xlink','href', n.imageData||''); g.appendChild(img);
+        if(n.name){ const label=el('text',{x:n.size/2,y:n.size+20,'text-anchor':'middle',fill:'#cfe7ff','font-size':'14'}); label.textContent=n.name; g.appendChild(label); }
+        g.appendChild(el('circle',{class:'hit',cx:n.size/2,cy:n.size/2,r:n.size/2+8}));
+
+      } else {
+        // --- Space with title centered; color/icon/tags/counter/portal ---
+        const pad=16, width=n.size, innerW=Math.max(10,width-pad*2);
+        const titleEl=el('text',{'text-anchor':'middle'}); titleEl.setAttribute('x', width/2);
+        const titleRes=fitTitle(titleEl, (n.icon? (n.icon+' ') : '')+(n.title||'Space'), innerW, 20, 12, 4);
+        const titleH=(titleRes.fontSize+titleRes.lineGap)*titleRes.lines.length;
+        const height=Math.max(width, Math.ceil(pad+titleH+pad)); n.height=height;
+
+        const fillCol=n.color||'#121a2b', strokeCol='#33416b';
+        const rect=el('rect',{x:0,y:0,width,height,rx:12,ry:12,fill:fillCol,stroke:strokeCol,'stroke-width':'2',class:'shadow'});
+        const outline=el('rect',{x:-4,y:-4,width:width+8,height:height+8,rx:14,ry:14,fill:'none',stroke:'#2a3558','stroke-width':'2',class:'outline'});
+        g.appendChild(outline); g.appendChild(rect);
+
+        const titleTop=(height-titleH)/2; titleEl.setAttribute('y', titleTop+titleRes.fontSize); renderLines(titleEl,titleRes.lines,titleRes.lineGap); g.appendChild(titleEl);
+
+        // tags chips
+        if(n.tags && n.tags.length){
+          const tagsG=el('g',{}); const chipY=height-10;
+          let x=10;
+          n.tags.slice(0,4).forEach(t=>{
+            const bg=el('rect',{x,y:chipY-16,rx:8,ry:8,height:18,fill:'#0f152a',stroke:'#2a3358','stroke-width':'1'});
+            const tt=el('text',{x:x+8,y:chipY-2,'font-size':'12',fill:'#cfe7ff'}); tt.textContent=t; const wTxt=measureTextWidth(tt,t)+16; bg.setAttribute('width',wTxt);
+            tagsG.appendChild(bg); tagsG.appendChild(tt); x+=wTxt+6;
+          });
+          g.appendChild(tagsG);
+        }
+
+        // counter pill (+/-)
+        if(typeof n.count!=='number') n.count=0;
+        const pill=el('g',{}); const px=width-14, py=14;
+        pill.appendChild(el('rect',{x:px-38,y:py-12,width:38,height:24,rx:12,ry:12,class:'counter'}));
+        const val=el('text',{x:px-19,y:py+4,'font-size':'12','text-anchor':'middle',class:'counter-text'}); val.textContent=String(n.count); pill.appendChild(val);
+        // buttons
+        const minus=el('rect',{x:px-52,y:py-12,width:12,height:24,rx:6,ry:6,class:'counter-btn'}); const plus=el('rect',{x:px,y:py-12,width:12,height:24,rx:6,ry:6,class:'counter-btn'});
+        minus.addEventListener('click',ev=>{ ev.stopPropagation(); n.count=Math.max(0,(n.count||0)-1); pushHistory(); render(); });
+        plus.addEventListener('click',ev=>{ ev.stopPropagation(); n.count=(n.count||0)+1; pushHistory(); render(); });
+        pill.appendChild(minus); pill.appendChild(plus);
+        // +/- glyphs
+        const mnT=el('text',{x:px-46,y:py+4,'font-size':'14',fill:'#cfe7ff'}); mnT.textContent='-';
+        const plT=el('text',{x:px+6,y:py+4,'font-size':'14',fill:'#cfe7ff'}); plT.textContent='+';
+        pill.appendChild(mnT); pill.appendChild(plT);
+        g.appendChild(pill);
+
+        // hit
+        g.appendChild(el('rect',{class:'hit',x:-8,y:-8,width:width+16,height:height+16,rx:16,ry:16}));
+
+        // rules popover on hover
+        if((n.note||'').trim()){
+          const lines=breakLines(titleEl,n.note,Math.max(220,innerW));
+          const lineH=14+4; const popW=Math.min(420, Math.max(...lines.map(s=>measureTextWidth(titleEl,s)))+32); const popH=lines.length*lineH+24;
+          const grp=el('g',{style:'display:none'}); const bg=el('rect',{x:(width-popW)/2,y:-popH-12,width:popW,height:popH,rx:10,ry:10,fill:'#0f152a',stroke:'#2a3358','stroke-width':'1.5'});
+          const tip=el('path',{d:`M ${width/2-8} -14 L ${width/2+8} -14 L ${width/2} -2 Z`, fill:'#0f152a', stroke:'#2a3358','stroke-width':'1.5'});
+          const tx=el('text',{'text-anchor':'middle',fill:'#d5e6ff','font-size':'14'}); tx.setAttribute('x', width/2); tx.setAttribute('y', -popH-12+14+2);
+          lines.forEach((ln,i)=>{ const t=document.createElementNS('http://www.w3.org/2000/svg','tspan'); t.setAttribute('x',width/2); t.setAttribute('y', parseFloat(tx.getAttribute('y')) + i*lineH); t.textContent=ln; tx.appendChild(t); });
+          grp.appendChild(bg); grp.appendChild(tip); grp.appendChild(tx); g.appendChild(grp);
+          g.addEventListener('mouseenter', ()=> grp.style.display='block'); g.addEventListener('mouseleave', ()=> grp.style.display='none');
+        }
+
+        // dblclick editor
+        g.addEventListener('dblclick', ev=>{
+          ev.stopPropagation();
+          const title = prompt('Space title:', n.title||'Space'); if(title!==null) n.title=title.trim();
+          const note = prompt('Rule (shows on hover):', n.note||''); if(note!==null) n.note=note.trim();
+          const color = prompt('Hex/keyword color (blank keeps):', n.color||''); if(color!==null) n.color=color.trim()||n.color;
+          const icon = prompt('Emoji/icon (optional):', n.icon||''); if(icon!==null) n.icon=icon.trim();
+          const tags = prompt('Tags (comma separated):', (n.tags||[]).join(',')); if(tags!==null) n.tags = tags.split(',').map(s=>s.trim()).filter(Boolean);
+          const portal = prompt('Portal to world (type exact world name or blank):', n.portalToName||''); 
+          if(portal!==null){ n.portalToName=portal.trim()||null; n.portalToWorldId = (worlds.find(w=>w.name===n.portalToName)||{}).id || null; }
+          pushHistory(); render();
+        });
+
+        // alt+click to portal
+        g.addEventListener('click', ev=>{
+          if(ev.altKey && n.portalToWorldId){ switchWorld(n.portalToWorldId); }
+        });
+      }
+
+      // common events
+      g.addEventListener('mousedown', startDrag);
+      g.addEventListener('touchstart', startDrag, {passive:false});
+      g.addEventListener('click', ev=>{ ev.stopPropagation(); handleNodeClick(n.id); });
+
+      nodesLayer.appendChild(g);
+    });
+
+    // update cheats badge
+    cheatsBadge.textContent = `Grid: ${showGrid?'On':'Off'} • Snap: ${snapOn?'On':'Off'}`;
+    // show edge editor if edge selected
+    const ee = (selectedId && (getWorld().edges.find(e=>e.id===selectedId))) || null;
+    edgeEditor.style.display = ee ? 'block' : 'none';
+    if(ee){ edgeTypeSel.value = ee.type||'normal'; edgeLabelInput.value = ee.label||''; }
+  }
+
+  // ======= Edge editor actions =======
+  edgeSaveBtn.onclick = ()=>{ const w=getWorld(); const e=w.edges.find(x=>x.id===selectedId); if(!e) return;
+    e.type=edgeTypeSel.value; e.label=edgeLabelInput.value.trim(); pushHistory(); render();
+  };
+
+  // ======= Selection / connect =======
+  function select(id){ selectedId = id; render(); }
+  function handleNodeClick(id){
+    if(currentMode==='select'){ select(id); return; }
+    if(currentMode==='connect'){
+      const w=getWorld(); if(!w) return;
+      if(!connectFirst){ connectFirst=id; modeBadge.textContent='Mode: Connect — picked first. Click target.'; }
+      else if(connectFirst===id){ connectFirst=null; modeBadge.textContent='Mode: Connect'; }
+      else {
+        const edgeId=uid(); w.edges.push({id:edgeId, sourceId:connectFirst, targetId:id, type:'oneway', label:''});
+        connectFirst=null; modeBadge.textContent='Mode: Connect — link created!'; pushHistory(); select(edgeId);
+      }
+    }
+  }
+
+  // ======= Dragging with snap =======
+  let drag=null;
+  function getSVGPoint(ev){
+    const p=stage.createSVGPoint(); const src=ev.touches?ev.touches[0]:ev;
+    p.x=src.clientX; p.y=src.clientY; const m=stage.getScreenCTM().inverse(); return p.matrixTransform(m);
+  }
+  function startDrag(ev){
+    if(currentMode!=='select') return;
+    ev.preventDefault();
+    const g=ev.currentTarget; const id=g.getAttribute('data-id'); select(id);
+    const pt=getSVGPoint(ev); const w=getWorld(); const node=w.nodes.find(n=>n.id===id);
+    drag={ id, startX:pt.x, startY:pt.y, nodeStartX:node.x, nodeStartY:node.y };
+    window.addEventListener('mousemove', onDrag); window.addEventListener('mouseup', endDrag);
+    window.addEventListener('touchmove', onDrag, {passive:false}); window.addEventListener('touchend', endDrag);
+  }
+  function onDrag(ev){
+    if(!drag) return; ev.preventDefault();
+    const pt=getSVGPoint(ev); const w=getWorld(); const node=w.nodes.find(n=>n.id===drag.id);
+    let nx=drag.nodeStartX + (pt.x - drag.startX), ny=drag.nodeStartY + (pt.y - drag.startY);
+    if(snapOn){ const gs=(w.bg?.gridSize)||48; nx = Math.round(nx/gs)*gs; ny = Math.round(ny/gs)*gs; }
+    node.x=nx; node.y=ny; render();
+  }
+  function endDrag(){ if(drag){ pushHistory(); } drag=null;
+    window.removeEventListener('mousemove', onDrag); window.removeEventListener('mouseup', endDrag);
+    window.removeEventListener('touchmove', onDrag); window.removeEventListener('touchend', endDrag);
+  }
+
+  // ======= Create nodes =======
+
+  // FIXED: Create a player regardless of image selection; if image chosen, load it; else create with no image.
+  addPlayerBtn.onclick=()=>{
+    const w=getWorld(); if(!w) return;
+
+    const add = (imgData)=>{
+      const n={id:uid(), type:'player',
+        x:200+Math.random()*200, y:200+Math.random()*120,
+        size:clamp(parseInt(playerSizeInput.value)||96,40,240),
+        name:(playerNameInput.value||'').trim(),
+        imageData:imgData||'',
+        stats:''};
+      w.nodes.push(n); pushHistory(); select(n.id);
+    };
+
+    // if there is already a file selected, use it once then clear
+    if(playerImageInput.files && playerImageInput.files[0]){
+      const file=playerImageInput.files[0]; const rd=new FileReader();
+      rd.onload=()=>{ add(rd.result); playerImageInput.value=''; }; // clear so we can reuse same filename later
+      rd.readAsDataURL(file);
+      return;
+    }
+
+    // open picker; if user picks an image we add with it; if they cancel we still add a player (no image)
+    playerImageInput.click();
+    const handler = ()=>{
+      playerImageInput.removeEventListener('change', handler);
+      if(playerImageInput.files && playerImageInput.files[0]){
+        const file=playerImageInput.files[0]; const rd=new FileReader();
+        rd.onload=()=>{ add(rd.result); playerImageInput.value=''; };
+        rd.readAsDataURL(file);
+      } else {
+        // user canceled picker — still create a player with no image
+        add('');
+      }
+    };
+    playerImageInput.addEventListener('change', handler);
+  };
+
+  addSpaceBtn.onclick=()=>{
+    const w=getWorld(); if(!w) return;
+    const n={ id:uid(), type:'space', x:600+Math.random()*200, y:260+Math.random()*140, size:clamp(parseInt(spaceSizeInput.value)||180,60,260), height:null, title:(spaceTitleInput.value||'Space').trim(), note:(spaceNoteInput.value||'').trim(), color:'#121a2b', icon:'', tags:[], count:0 };
+    w.nodes.push(n); pushHistory(); select(n.id);
+  };
+
+  // ======= Delete / Export / Import =======
+  function deleteSelection(){
+    const w=getWorld(); if(!w||!selectedId) return;
+    const ni=w.nodes.findIndex(n=>n.id===selectedId);
+    if(ni>=0){ const id=w.nodes[ni].id; w.nodes.splice(ni,1); w.edges=w.edges.filter(e=>e.sourceId!==id && e.targetId!==id); selectedId=null; pushHistory(); render(); return; }
+    const ei=w.edges.findIndex(e=>e.id===selectedId); if(ei>=0){ w.edges.splice(ei,1); selectedId=null; pushHistory(); render(); }
+  }
+  deleteBtn.onclick=deleteSelection;
+
+  exportBtn.onclick=()=>{ const data={worlds, meta:{createdAt:new Date().toISOString(), version:8}}; const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='board-worlds.json'; a.click(); URL.revokeObjectURL(url); };
+  importInput.onchange=()=>{
+    const file=importInput.files[0]; if(!file) return; const rd=new FileReader();
+    rd.onload=()=>{
+      try{
+        const data=JSON.parse(rd.result);
+        if(Array.isArray(data.worlds)) worlds=data.worlds;
+        else if(Array.isArray(data.nodes)&&Array.isArray(data.edges)) worlds=[{id:uid(), name:'Imported', nodes:data.nodes, edges:data.edges, wheels:[], bg:{type:'gradient',gridSize:48,image:null}, rules:''}];
+        worlds.forEach(ensureWorldDefaults);
+        currentWorldId=worlds[0]?.id || null; if(!currentWorldId) newWorld('World 1'); selectedId=null; connectFirst=null; setMode('select'); pushHistory(); renderTabs(); render(); syncPrimaryTabs();
+        // hydrate rules textarea after import
+        if(primaryView==='rules') renderRulesPanel();
+      }catch(err){ alert('Import failed: '+err.message); }
+    };
+    rd.readAsText(file);
+  };
+
+  // ======= Autosave + Versions =======
+  function autosave(){ localStorage.setItem(SAVE_KEY, JSON.stringify({worlds, currentWorldId, showGrid, snapOn})); }
+  setInterval(autosave, 5000);
+  snapshotBtn.onclick=()=>{ const list = JSON.parse(localStorage.getItem(VERSIONS_KEY)||'[]'); list.unshift({ ts: Date.now(), data: {worlds, currentWorldId, showGrid, snapOn} }); localStorage.setItem(VERSIONS_KEY, JSON.stringify(list.slice(0,25))); loadVersions(); };
+  function loadVersions(){
+    const list = JSON.parse(localStorage.getItem(VERSIONS_KEY)||'[]'); versionsSelect.innerHTML=''; list.forEach((v,i)=>{ const opt=document.createElement('option'); opt.value=i; const d=new Date(v.ts); opt.textContent = `${i+1}. ${d.toLocaleString()}`; versionsSelect.appendChild(opt); });
+  }
+  restoreBtn.onclick=()=>{
+    const list = JSON.parse(localStorage.getItem(VERSIONS_KEY)||'[]'); const idx=parseInt(versionsSelect.value)||0; const v=list[idx]; if(!v) return;
+    ({worlds, currentWorldId, showGrid, snapOn} = deepCopy(v.data)); worlds.forEach(ensureWorldDefaults); pushHistory(); renderTabs(); render(); syncPrimaryTabs();
+  };
+
+  // load autosave
+  (function(){
+    const saved = localStorage.getItem(SAVE_KEY);
+    if(saved){
+      try{ const s=JSON.parse(saved); worlds=s.worlds; currentWorldId=s.currentWorldId; showGrid=!!s.showGrid; snapOn=!!s.snapOn; worlds.forEach(ensureWorldDefaults); }catch(e){}
+    }
+  })();
+
+  // ======= Undo/Redo =======
+  function pushHistory(){ history.push(JSON.stringify({worlds,currentWorldId,showGrid,snapOn})); if(history.length>100) history.shift(); redoStack.length=0; autosave(); }
+  function undo(){ if(history.length<=1) return; const cur=history.pop(); redoStack.push(cur); const prev=history[history.length-1]; const s=JSON.parse(prev); worlds=s.worlds; currentWorldId=s.currentWorldId; showGrid=s.showGrid; snapOn=s.snapOn; worlds.forEach(ensureWorldDefaults); renderTabs(); render(); syncPrimaryTabs(); }
+  function redo(){ if(!redoStack.length) return; const nxt=redoStack.pop(); history.push(nxt); const s=JSON.parse(nxt); worlds=s.worlds; currentWorldId=s.currentWorldId; showGrid=s.showGrid; snapOn=s.snapOn; worlds.forEach(ensureWorldDefaults); renderTabs(); render(); syncPrimaryTabs(); }
+
+  // ======= Background controls =======
+  bgTypeSel.onchange=()=>{ const w=getWorld(); w.bg.type=bgTypeSel.value; pushHistory(); render(); };
+  gridSizeInput.oninput=()=>{ const w=getWorld(); w.bg.gridSize=clamp(parseInt(gridSizeInput.value)||48,16,160); pushHistory(); render(); };
+  bgImageInput.onchange=()=>{ const w=getWorld(); const f=bgImageInput.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ w.bg.image=rd.result; w.bg.type='image'; bgTypeSel.value='image'; pushHistory(); render(); }; rd.readAsDataURL(f); };
+
+  // ======= Primary tabs =======
+  function syncPrimaryTabs(){
+    boardsTab.classList.toggle('active', primaryView==='boards');
+    playersTab.classList.toggle('active', primaryView==='players');
+    wheelsTab.classList.toggle('active', primaryView==='wheels');
+    rulesTab.classList.toggle('active',  primaryView==='rules');
+    boardsView.style.display = primaryView==='boards'?'block':'none';
+    playersView.style.display = primaryView==='players'?'block':'none';
+    wheelsView.style.display  = primaryView==='wheels'?'block':'none';
+    rulesView.style.display   = primaryView==='rules'?'block':'none';
+    tabsBar.style.display     = primaryView==='boards'?'flex':'none';
+    if(primaryView==='players') renderPlayersPanel();
+    if(primaryView==='wheels')  renderWheelsPanel();
+    if(primaryView==='rules')   renderRulesPanel();
+  }
+  boardsTab.onclick=()=>{ primaryView='boards'; syncPrimaryTabs(); };
+  playersTab.onclick=()=>{ primaryView='players'; syncPrimaryTabs(); };
+  wheelsTab.onclick=()=>{ primaryView='wheels'; syncPrimaryTabs(); };
+  rulesTab.onclick =()=>{ primaryView='rules';  syncPrimaryTabs(); };
+
+  // ======= Players panel =======
+  function renderPlayersPanel(){
+    const w=getWorld(); playersGrid.innerHTML=''; const players=w.nodes.filter(n=>n.type==='player');
+    if(players.length===0){ const div=document.createElement('div'); div.className='panel-hint'; div.textContent='No players yet. Use “+ Player”.'; playersGrid.appendChild(div); return; }
+    players.forEach(p=>{
+      const card=document.createElement('div'); card.className='card';
+      const header=document.createElement('div'); header.className='row';
+      const img=document.createElement('img'); img.className='avatar'; img.src=p.imageData||'';
+      const wrap=document.createElement('div'); wrap.className='grow';
+      const lab=document.createElement('div'); lab.className='label'; lab.textContent='Player';
+      const inp=document.createElement('input'); inp.type='text'; inp.value=p.name||''; inp.placeholder='Unnamed';
+      inp.oninput=debounce(()=>{ p.name=inp.value.trim(); render(); pushHistory(); }, 200);
+      wrap.appendChild(lab); wrap.appendChild(inp); header.appendChild(img); header.appendChild(wrap);
+      const sLab=document.createElement('div'); sLab.className='label'; sLab.textContent='Notes / Stats';
+      const ta=document.createElement('textarea'); ta.value=p.stats||''; ta.placeholder='Type notes, points, inventory…';
+      ta.oninput=debounce(()=>{ p.stats=ta.value; pushHistory(); }, 200);
+      card.appendChild(header); card.appendChild(sLab); card.appendChild(ta); playersGrid.appendChild(card);
+    });
+  }
+
+  // ======= Wheels panel =======
+  function worldWheels(){ const w=getWorld(); if(!w.wheels) w.wheels=[]; return w.wheels; }
+  function ensureWheel(){ const arr=worldWheels(); if(!arr.length){ currentWheelId=null; wheelList.innerHTML='<div class="panel-hint">No wheels yet. Click “+ New Wheel”.</div>'; drawWheel(); return null; } if(!currentWheelId || !arr.find(x=>x.id===currentWheelId)) currentWheelId=arr[0].id; return arr.find(x=>x.id===currentWheelId); }
+  function renderWheelsPanel(){
+    const arr=worldWheels(); wheelList.innerHTML=''; if(!arr.length){ ensureWheel(); return; }
+    arr.forEach(w=>{
+      const it=document.createElement('div'); it.className='wheel-item'+(w.id===currentWheelId?' active':'');
+      it.innerHTML=`<div>${escapeHTML(w.name||'Untitled')}</div><div class="panel-hint">${(w.entries||[]).length} items</div>`;
+      it.onclick=()=>{ currentWheelId=w.id; renderWheelsPanel(); }; wheelList.appendChild(it);
+    });
+    const cw=ensureWheel(); if(!cw) return;
+    wheelName.value=cw.name||''; wheelEntries.value=(cw.entries||[]).map(e=>e.label).join('\n'); spinResult.textContent=cw.lastResult?('Last: '+cw.lastResult):''; drawWheel();
+  }
+  function randomColor(i,n){ const hue = (i*360/n + 20) % 360; return `hsl(${hue},70%,55%)`; }
+  function getCurrentWheel(){ return worldWheels().find(x=>x.id===currentWheelId)||null; }
+  function drawWheel(){
+    const w=getCurrentWheel(); const W=wheelCanvas.width,H=wheelCanvas.height,r=Math.min(W,H)/2-6;
+    wctx.clearRect(0,0,W,H); wctx.save(); wctx.translate(W/2,H/2);
+    const entries=(w&&w.entries&&w.entries.length)?w.entries:[{label:'Add entries',color:'#33416b'}]; const n=entries.length; const base=(spinning?spinning.angle:0)||0;
+    for(let i=0;i<n;i++){ const a0=base+i*2*Math.PI/n, a1=base+(i+1)*2*Math.PI/n;
+      wctx.beginPath(); wctx.moveTo(0,0); wctx.arc(0,0,r,a0,a1); wctx.closePath(); wctx.fillStyle=entries[i].color||randomColor(i,n); wctx.fill(); wctx.strokeStyle='#0a1228'; wctx.lineWidth=2; wctx.stroke();
+      wctx.save(); const mid=(a0+a1)/2; wctx.rotate(mid); wctx.translate(r*0.65,0); wctx.rotate(Math.PI/2); wctx.fillStyle='#e6eef6'; wctx.font='16px Inter, Arial, sans-serif'; wctx.textAlign='center'; wctx.textBaseline='middle'; const text=entries[i].label; wctx.fillText(text.length>28? text.slice(0,27)+'…':text,0,0,r*0.6); wctx.restore();
+    }
+    // hub + pointer
+    wctx.beginPath(); wctx.arc(0,0,20,0,Math.PI*2); wctx.fillStyle='#0f172a'; wctx.fill(); wctx.strokeStyle='#7dd3fc'; wctx.lineWidth=2; wctx.stroke();
+    wctx.restore();
+    wctx.beginPath(); wctx.moveTo(W/2,8); wctx.lineTo(W/2-14,28); wctx.lineTo(W/2+14,28); wctx.closePath(); wctx.fillStyle='#7dd3fc'; wctx.fill(); wctx.strokeStyle='#1b2b46'; wctx.stroke();
+  }
+  function spinWheel(){
+    const w=getCurrentWheel(); if(!w||!w.entries||!w.entries.length) return; if(spinning) return;
+    const n=w.entries.length; const targetIndex=Math.floor(Math.random()*n); const dur=clamp(parseFloat(spinSeconds.value)||5,1,20)*1000;
+    const slice=2*Math.PI/n; const mid=targetIndex*slice+slice/2; const targetAngle=-Math.PI/2 - mid + Math.PI*6;
+    const start=performance.now(); const startAngle=(spinning?spinning.angle:0)||0;
+    spinning={angle:startAngle};
+    function step(ts){ const t=Math.min(1,(ts-start)/dur); const k=1-Math.pow(1-t,3); spinning.angle = startAngle + (targetAngle-startAngle)*k; drawWheel(); if(t<1) requestAnimationFrame(step); else { spinning=null; w.lastResult=w.entries[targetIndex].label; spinResult.textContent='Result: '+w.lastResult; pushHistory(); } }
+    requestAnimationFrame(step);
+  }
+  saveWheelBtn.onclick=()=>{
+    const arr=worldWheels(); let w=getCurrentWheel();
+    const name=wheelName.value.trim()||'Untitled'; const lines=wheelEntries.value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean); const entries=lines.map((label,i)=>({label,color:randomColor(i,Math.max(lines.length,1))}));
+    if(!w){ w={id:uid(), name, entries, lastResult:null}; arr.push(w); currentWheelId=w.id; } else { w.name=name; w.entries=entries; }
+    pushHistory(); renderWheelsPanel();
+  };
+  newWheelBtn.onclick=()=>{ const arr=worldWheels(); const nw={id:uid(), name:'New Wheel '+(arr.length+1), entries:[{label:'Alice',color:'#7dd3fc'},{label:'Bob',color:'#6ee7b7'},{label:'Charlie',color:'#fca5a5'}], lastResult:null}; arr.push(nw); currentWheelId=nw.id; pushHistory(); renderWheelsPanel(); };
+  dupWheelBtn.onclick=()=>{ const w=getCurrentWheel(); if(!w) return; const arr=worldWheels(); const cp=deepCopy(w); cp.id=uid(); cp.name=w.name+' (Copy)'; arr.push(cp); currentWheelId=cp.id; pushHistory(); renderWheelsPanel(); };
+  delWheelBtn.onclick=()=>{ const arr=worldWheels(); const idx=arr.findIndex(x=>x.id===currentWheelId); if(idx<0) return; if(!confirm('Delete this wheel?')) return; arr.splice(idx,1); currentWheelId=null; pushHistory(); renderWheelsPanel(); };
+  colorsBtn.onclick=()=>saveWheelBtn.click();
+  shuffleBtn.onclick=()=>{ const lines=wheelEntries.value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean); for(let i=lines.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [lines[i],lines[j]]=[lines[j],lines[i]]; } wheelEntries.value=lines.join('\n'); saveWheelBtn.click(); };
+  spinBtn.onclick=spinWheel;
+
+  // ======= Rules panel =======
+  function renderRulesPanel(){
+    const w=getWorld(); rulesText.value = w.rules || '';
+  }
+  rulesText.addEventListener('input', debounce(()=>{
+    const w=getWorld(); w.rules = rulesText.value; pushHistory();
+  }, 150));
+
+  // ======= Keyboard =======
+  window.addEventListener('keydown', e=>{
+    const tag=(document.activeElement&&document.activeElement.tagName)||''; if(['INPUT','TEXTAREA','SELECT'].includes(tag)) return;
+    if(e.key.toLowerCase()==='g'){ showGrid=!showGrid; pushHistory(); render(); }
+    if(e.key.toLowerCase()==='s'){ snapOn=!snapOn; pushHistory(); render(); }
+    if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='z'){ e.preventDefault(); undo(); }
+    if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='y'){ e.preventDefault(); redo(); }
+    if(e.key==='1'){ primaryView='boards'; syncPrimaryTabs(); }
+    if(e.key==='2'){ primaryView='players'; syncPrimaryTabs(); }
+    if(e.key==='3'){ primaryView='wheels';  syncPrimaryTabs(); }
+    if(e.key==='4'){ primaryView='rules';   syncPrimaryTabs(); }
+  });
+
+  // ======= Export PNG =======
+  exportPngBtn.onclick=async ()=>{
+    const svgEl = stage.cloneNode(true);
+    // hide helpers in export
+    svgEl.querySelector('#stageGrid').setAttribute('opacity', showGrid? '1':'0');
+    const xml = new XMLSerializer().serializeToString(svgEl);
+    const svgBlob = new Blob([xml], {type:'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(svgBlob);
+    const img = new Image(); img.onload = ()=>{
+      const canvas = document.createElement('canvas'); canvas.width=2400; canvas.height=1400; const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0); const dataURL=canvas.toDataURL('image/png'); const a=document.createElement('a'); a.href=dataURL; a.download='board-world.png'; a.click(); URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  };
+
+  // ======= Stage + keys =======
+  stage.addEventListener('click', ()=>{ selectedId=null; render(); });
+  window.addEventListener('keydown', (e)=>{
+    if((e.key==='Delete'||e.key==='Backspace') && !(document.activeElement && ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))){ deleteSelection(); }
+    if(e.key==='c' && (e.ctrlKey||e.metaKey)){ setMode('connect'); }
+    if(e.key==='v' && (e.ctrlKey||e.metaKey)){ setMode('select'); }
+    if(e.key==='n' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); newWorld(); }
+  });
+
+  // ======= Seed / Init =======
+  function seed(){
+    if(worlds.length){ renderTabs(); render(); syncPrimaryTabs(); loadVersions(); pushHistory(); return; }
+    const w1={ id:uid(), name:'World 1', nodes:[], edges:[], wheels:[], bg:{type:'gradient',gridSize:48,image:null}, rules:'' };
+    w1.nodes.push({id:uid(), type:'space', x:220, y:140, size:200, height:null, title:'Start', note:'Begin here', color:'#121a2b', icon:'⭐', tags:['start'], count:0});
+    w1.nodes.push({id:uid(), type:'space', x:540, y:340, size:200, height:null, title:'Challenge', note:'Hover for rule', color:'#121a2b', icon:'⚠️', tags:['challenge'], count:0});
+    w1.nodes.push({id:uid(), type:'player', x:900, y:200, size:96, name:'Player A', imageData:'', stats:''});
+    w1.nodes.push({id:uid(), type:'player', x:1060, y:360, size:96, name:'Player B', imageData:'', stats:''});
+    w1.wheels.push({id:uid(), name:'Default Wheel', entries:[{label:'Alice',color:'#7dd3fc'},{label:'Bob',color:'#6ee7b7'},{label:'Charlie',color:'#fca5a5'}], lastResult:null});
+    w1.edges.push({id:uid(), sourceId:w1.nodes[0].id, targetId:w1.nodes[1].id, type:'oneway', label:'Cost 1'});
+    const w2={ id:uid(), name:'World 2', nodes:[{id:uid(), type:'space', x:300, y:260, size:220, height:null, title:'Another Page', note:'Fresh canvas', color:'#121a2b', icon:'🗺️', tags:['zone'], count:0}], edges:[], wheels:[], bg:{type:'grid',gridSize:48,image:null}, rules:'' };
+    worlds=[w1,w2]; currentWorldId=w1.id; renderTabs(); render(); syncPrimaryTabs(); loadVersions(); pushHistory();
+  }
+  seed();
+
+})();
+</script>
+</body>
+</html>

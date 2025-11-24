@@ -21,12 +21,37 @@
     padding:10px 14px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--line);
     position:sticky; top:0; z-index:7; backdrop-filter: blur(6px);
   }
-  .toolbar .group{display:flex; gap:8px; align-items:center; background:var(--panel); border:1px solid var(--line); padding:8px; border-radius:12px}
-  button, .file-label{
-    background:#12192d; color:var(--ink); border:1px solid var(--line); padding:8px 10px; border-radius:10px; cursor:pointer; white-space:nowrap
+  .toolbar .group{
+    display:flex; gap:8px; align-items:center; background:var(--panel);
+    border:1px solid var(--line); padding:8px; border-radius:12px
   }
-  button.active{outline:2px solid var(--accent)}
-  button:hover, .file-label:hover{background:#17233d}
+
+  button, .file-label{
+    background:#12192d;
+    color:var(--ink);
+    border:1px solid var(--line);
+    padding:8px 10px;
+    border-radius:10px;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .15s ease, transform .08s ease,
+               box-shadow .15s ease, border-color .15s ease;
+  }
+  button.active{
+    outline:2px solid var(--accent);
+    box-shadow:0 0 0 1px rgba(125,211,252,.35);
+  }
+  button:hover, .file-label:hover{
+    background:#17233d;
+    transform:translateY(-1px);
+    box-shadow:0 6px 14px rgba(0,0,0,.25);
+    border-color:#3a4a72;
+  }
+  button:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:2px;
+  }
+
   input[type="text"], input[type="number"], textarea, select{
     background:#0f152a; color:var(--ink); border:1px solid var(--line); padding:8px 10px; border-radius:8px; min-width:140px
   }
@@ -40,8 +65,10 @@
     border-bottom:1px solid var(--line); background:rgba(255,255,255,0.02);
     position:sticky; top:56px; z-index:6; overflow:auto
   }
-  .ptab{display:flex; gap:8px; align-items:center; padding:8px 14px; border:1px solid var(--line);
-    background:#131c33; border-radius:12px; cursor:pointer; user-select:none; font-weight:600}
+  .ptab{
+    display:flex; gap:8px; align-items:center; padding:8px 14px; border:1px solid var(--line);
+    background:#131c33; border-radius:12px; cursor:pointer; user-select:none; font-weight:600
+  }
   .ptab.active{background:#17233f; outline:2px solid var(--accent)}
 
   /* World tabs (boards only) */
@@ -49,7 +76,11 @@
     display:flex; gap:8px; align-items:center; padding:8px 12px; border-bottom:1px solid var(--line);
     background:rgba(255,255,255,0.02); position:sticky; top:104px; z-index:5; overflow:auto
   }
-  .tab{display:flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--line); background:#131c33; border-radius:12px; cursor:pointer; user-select:none}
+  .tab{
+    display:flex; align-items:center; gap:8px; padding:8px 12px;
+    border:1px solid var(--line); background:#131c33;
+    border-radius:12px; cursor:pointer; user-select:none
+  }
   .tab.active{background:#17233f; outline:2px solid var(--accent)}
   .tab .name{max-width:200px; overflow:hidden; text-overflow:ellipsis}
   .tab .x{font-weight:700; opacity:.7}
@@ -74,7 +105,11 @@
   .connector.oneway{marker-end:url(#arrow)}
   .connector.teleport{stroke:#a786ff; stroke-dasharray:6 6; marker-end:url(#dot)}
   .connector.selected{stroke:var(--highlight)}
-  .edge-editor{position:absolute; right:12px; bottom:12px; background:rgba(15,21,42,.85); border:1px solid var(--line); padding:10px; border-radius:12px; display:none; gap:8px}
+  .edge-editor{
+    position:absolute; right:12px; bottom:12px;
+    background:rgba(15,21,42,.85); border:1px solid var(--line);
+    padding:10px; border-radius:12px; display:none; gap:8px
+  }
   .edge-editor .row{display:flex; gap:8px; align-items:center}
 
   /* Player Stats */
@@ -100,7 +135,50 @@
   .counter-btn:hover{fill:#1e3b6b}
 
   /* Grid toggle badge */
-  .cheats{position:absolute; right:12px; bottom:12px; background:rgba(0,0,0,.35); color:#bfeaff; padding:6px 10px; border-radius:10px; font-size:12px; border:1px solid var(--line)}
+  .cheats{
+    position:absolute; right:12px; bottom:12px; background:rgba(0,0,0,.35); color:#bfeaff; padding:6px 10px; border-radius:10px; font-size:12px; border:1px solid var(--line)
+  }
+
+  /* Hotkeys modal */
+  .hotkeys-modal{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.55);
+    backdrop-filter:blur(4px);
+    z-index:99;
+  }
+  .hotkeys-modal.show{display:flex}
+  .hotkeys-sheet{
+    background:#0f1526;
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:16px 18px;
+    max-width:420px;
+    width:calc(100% - 32px);
+    box-shadow:0 20px 70px rgba(0,0,0,.6);
+    font-size:14px;
+  }
+  .hotkeys-sheet h3{margin:0 0 8px}
+  .hotkeys-sheet ul{margin:0;padding-left:18px}
+  .hotkeys-sheet li{margin:4px 0}
+  .hotkeys-close{
+    margin-top:10px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:13px;
+    opacity:.85;
+    cursor:pointer;
+  }
+  .hotkeys-close kbd{
+    background:#141a3b;
+    border:1px solid #33407a;
+    padding:2px 6px;
+    border-radius:6px;
+  }
 </style>
 </head>
 <body>
@@ -110,6 +188,7 @@
     <div class="group">
       <button id="selectModeBtn" class="active">Select / Drag</button>
       <button id="connectModeBtn">Connect</button>
+      <button id="hotkeysBtn">Shortcuts</button>
       <span class="hint">Double-click a space to edit (title, rules, color, icon, tags, portal…)</span>
     </div>
 
@@ -199,6 +278,9 @@
     </svg>
     <div class="badge" id="modeBadge">Mode: Select / Drag</div>
     <div class="cheats" id="cheatsBadge">Grid: Off • Snap: Off</div>
+    <div class="badge" id="worldBadge" style="left:auto; right:12px; bottom:12px;">
+      World: – • Spaces: 0 • Players: 0 • Links: 0
+    </div>
     <div class="edge-editor" id="edgeEditor">
       <div class="row">
         <label>Type</label>
@@ -259,9 +341,28 @@
   </div>
 </div>
 
+<!-- Hotkeys / shortcuts modal -->
+<div id="hotkeysModal" class="hotkeys-modal" aria-hidden="true">
+  <div class="hotkeys-sheet">
+    <h3>Keyboard Shortcuts</h3>
+    <ul>
+      <li><kbd>G</kbd> toggle grid • <kbd>S</kbd> toggle snap</li>
+      <li><kbd>Ctrl/Cmd + Z</kbd> undo • <kbd>Ctrl/Cmd + Y</kbd> redo</li>
+      <li><kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd>/<kbd>4</kbd> switch tabs (Boards / Players / Wheels / Rules)</li>
+      <li><kbd>Ctrl/Cmd + C</kbd> Connect mode • <kbd>Ctrl/Cmd + V</kbd> Select mode</li>
+      <li><kbd>Delete</kbd> remove selected node/edge</li>
+      <li><kbd>Ctrl/Cmd + N</kbd> new world</li>
+    </ul>
+    <div class="hotkeys-close"><kbd>Esc</kbd> Close</div>
+  </div>
+</div>
+
 <script>
 (function(){
   // ======= Short helpers =======
+
+
+
   const $ = sel => document.querySelector(sel);
   const uid = () => 'id-' + Math.random().toString(36).slice(2,10);
   const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
@@ -270,9 +371,13 @@
   const deepCopy = obj => JSON.parse(JSON.stringify(obj));
 
   // ======= DOM refs =======
+
+
+
   const stage = $('#stage'), nodesLayer = $('#nodesLayer'), connectionsLayer = $('#connectionsLayer');
   const stageBG = $('#stageBG'), stageGrid = $('#stageGrid');
-  const selectModeBtn = $('#selectModeBtn'), connectModeBtn = $('#connectModeBtn'), modeBadge = $('#modeBadge'), cheatsBadge = $('#cheatsBadge');
+  const selectModeBtn = $('#selectModeBtn'), connectModeBtn = $('#connectModeBtn'),
+        modeBadge = $('#modeBadge'), cheatsBadge = $('#cheatsBadge'), worldBadge = $('#worldBadge');
   const tabsBar = $('#worldTabs');
   const boardsTab = $('#boardsTab'), playersTab = $('#playersTab'), wheelsTab = $('#wheelsTab'), rulesTab = $('#rulesTab');
   const boardsView = $('#boardsView'), playersView = $('#playersView'), wheelsView = $('#wheelsView'), rulesView = $('#rulesView');
@@ -297,7 +402,11 @@
   // Rules panel
   const rulesText = $('#rulesText');
 
+  // Hotkeys modal
+  const hotkeysModal = $('#hotkeysModal'), hotkeysBtn = $('#hotkeysBtn');
+
   // ======= State =======
+
   let worlds = [];
   let currentWorldId = null;
   let currentMode = 'select'; let selectedId = null; let connectFirst = null;
@@ -312,6 +421,7 @@
   let showGrid = false, snapOn = false;
 
   // ======= Measuring text for SVG =======
+
   const measureHost = document.createElementNS('http://www.w3.org/2000/svg','text');
   measureHost.setAttribute('visibility','hidden'); measureHost.setAttribute('opacity','0'); stage.appendChild(measureHost);
   function measureTextWidth(textEl, s){
@@ -341,11 +451,16 @@
       for(let w of words){
         if(measureTextWidth(textEl, w) > maxWidth){
           const chunks=hyphenateWord(textEl,w,maxWidth);
-          for(const c of chunks){ const test=line? (line+' '+c):c; if(measureTextWidth(textEl,test)<=maxWidth){ line=test; } else { if(line) lines.push(line); line=c; } }
+          for(const c of chunks){
+            const test=line? (line+' '+c):c;
+            if(measureTextWidth(textEl,test)<=maxWidth){ line=test; }
+            else { if(line) lines.push(line); line=c; }
+          }
           continue;
         }
         const test=line? (line+' '+w):w;
-        if(measureTextWidth(textEl,test)<=maxWidth){ line=test; } else { if(line) lines.push(line); line=w; }
+        if(measureTextWidth(textEl,test)<=maxWidth){ line=test; }
+        else { if(line) lines.push(line); line=w; }
       }
       if(line) lines.push(line);
     }
@@ -355,15 +470,37 @@
     while(textEl.firstChild) textEl.removeChild(textEl.firstChild);
     const x = parseFloat(textEl.getAttribute('x'))||0; let y = parseFloat(textEl.getAttribute('y'))||0;
     const size = parseFloat(textEl.getAttribute('font-size'))||14; const lineH=size+gap;
-    lines.forEach((ln,i)=>{ const t=document.createElementNS('http://www.w3.org/2000/svg','tspan'); t.setAttribute('x',x); t.setAttribute('y', y+i*lineH); t.setAttribute('text-anchor', textEl.getAttribute('text-anchor')||'start'); t.textContent=ln; textEl.appendChild(t); });
+    lines.forEach((ln,i)=>{
+      const t=document.createElementNS('http://www.w3.org/2000/svg','tspan');
+      t.setAttribute('x',x); t.setAttribute('y', y+i*lineH);
+      t.setAttribute('text-anchor', textEl.getAttribute('text-anchor')||'start');
+      t.textContent=ln; textEl.appendChild(t);
+    });
   }
   function fitTitle(textEl,text,maxWidth,startSize=20,minSize=12,gap=4){
-    for(let size=startSize; size>=minSize; size--){ textEl.setAttribute('font-size', size); textEl.setAttribute('font-weight','700'); const lines=breakLines(textEl,text,maxWidth); if(lines.length){ renderLines(textEl,lines,gap); return {lines,fontSize:size,lineGap:gap}; } }
-    const size=minSize; textEl.setAttribute('font-size', size); textEl.setAttribute('font-weight','700'); const lines=breakLines(textEl,text,maxWidth); renderLines(textEl,lines,gap); return {lines,fontSize:size,lineGap:gap};
+    for(let size=startSize; size>=minSize; size--){
+      textEl.setAttribute('font-size', size);
+      textEl.setAttribute('font-weight','700');
+      const lines=breakLines(textEl,text,maxWidth);
+      if(lines.length){
+        renderLines(textEl,lines,gap);
+        return {lines,fontSize:size,lineGap:gap};
+      }
+    }
+    const size=minSize;
+    textEl.setAttribute('font-size', size);
+    textEl.setAttribute('font-weight','700');
+    const lines=breakLines(textEl,text,maxWidth);
+    renderLines(textEl,lines,gap);
+    return {lines,fontSize:size,lineGap:gap};
   }
 
   // ======= Worlds =======
-  function getWorld(id=currentWorldId){ return worlds.find(w=>w.id===id); }
+
+  function getWorld(id=currentWorldId){
+    if(!worlds.length) return null;
+    return worlds.find(w=>w.id===id) || worlds[0];
+  }
   function ensureWorldDefaults(w){
     if(!w.wheels) w.wheels=[];
     if(!w.bg) w.bg={type:'gradient',gridSize:48,image:null};
@@ -374,34 +511,75 @@
     });
   }
   function renderTabs(){
-    tabsBar.innerHTML=''; worlds.forEach(w=>{
-      const el=document.createElement('div'); el.className='tab'+(w.id===currentWorldId?' active':''); el.title=w.name;
+    tabsBar.innerHTML='';
+    worlds.forEach(w=>{
+      const el=document.createElement('div');
+      el.className='tab'+(w.id===currentWorldId?' active':''); el.title=w.name;
       el.innerHTML=`<span class="name">${escapeHTML(w.name)}</span><span class="x" title="Delete world" data-del="${w.id}">×</span>`;
-      el.addEventListener('click',e=>{ if(e.target.dataset.del) return; switchWorld(w.id); });
-      el.querySelector('.x').addEventListener('click',e=>{ e.stopPropagation(); deleteWorld(w.id); });
+      el.addEventListener('click',e=>{
+        if(e.target.dataset.del) return;
+        switchWorld(w.id);
+      });
+      el.querySelector('.x').addEventListener('click',e=>{
+        e.stopPropagation();
+        deleteWorld(w.id);
+      });
       tabsBar.appendChild(el);
     });
-    const plus=document.createElement('div'); plus.className='tab plus'; plus.textContent='+'; plus.title='New world'; plus.onclick=()=>newWorld(); tabsBar.appendChild(plus);
+    const plus=document.createElement('div');
+    plus.className='tab plus'; plus.textContent='+';
+    plus.title='New world'; plus.onclick=()=>newWorld();
+    tabsBar.appendChild(plus);
   }
   function newWorld(name){
-    const w={id:uid(), name:name||('World '+(worlds.length+1)), nodes:[], edges:[], wheels:[], bg:{type:'gradient', gridSize:48, image:null}, rules:''};
-    worlds.push(w); currentWorldId=w.id; selectedId=null; connectFirst=null; setMode('select'); pushHistory(); renderTabs(); render(); syncPrimaryTabs();
+    const w={id:uid(), name:name||('World '+(worlds.length+1)),
+             nodes:[], edges:[], wheels:[], bg:{type:'gradient', gridSize:48, image:null}, rules:''};
+    worlds.push(w);
+    currentWorldId=w.id; selectedId=null; connectFirst=null;
+    setMode('select'); pushHistory(); renderTabs(); render(); syncPrimaryTabs();
   }
-  function switchWorld(id){ if(id===currentWorldId) return; currentWorldId=id; selectedId=null; connectFirst=null; setMode('select'); renderTabs(); render(); syncPrimaryTabs(); }
+  function switchWorld(id){
+    if(id===currentWorldId) return;
+    currentWorldId=id;
+    selectedId=null; connectFirst=null;
+    setMode('select'); renderTabs(); render(); syncPrimaryTabs();
+  }
   function deleteWorld(id){
-    if(worlds.length<=1){ alert('You need at least one world.'); return; }
-    const idx=worlds.findIndex(x=>x.id===id); if(idx===-1) return;
+    if(worlds.length<=1){
+      alert('You need at least one world.');
+      return;
+    }
+    const idx=worlds.findIndex(x=>x.id===id);
+    if(idx===-1) return;
     if(!confirm(`Delete "${worlds[idx].name}"?`)) return;
-    worlds.splice(idx,1); currentWorldId = worlds[Math.max(0, idx-1)]?.id || worlds[0].id; pushHistory(); renderTabs(); render(); syncPrimaryTabs();
+    worlds.splice(idx,1);
+    currentWorldId = worlds[Math.max(0, idx-1)]?.id || (worlds[0] && worlds[0].id) || null;
+    pushHistory(); renderTabs(); render(); syncPrimaryTabs();
   }
 
   // ======= Modes =======
-  function setMode(m){ currentMode=m; selectModeBtn.classList.toggle('active', m==='select'); connectModeBtn.classList.toggle('active', m==='connect'); modeBadge.textContent='Mode: '+(m==='select'?'Select / Drag':'Connect'); connectFirst=null; }
-  selectModeBtn.onclick=()=>setMode('select'); connectModeBtn.onclick=()=>setMode('connect');
+
+  function setMode(m){
+    currentMode=m;
+    selectModeBtn.classList.toggle('active', m==='select');
+    connectModeBtn.classList.toggle('active', m==='connect');
+    modeBadge.textContent='Mode: '+(m==='select'?'Select / Drag':'Connect');
+    connectFirst=null;
+  }
+  selectModeBtn.onclick=()=>setMode('select');
+  connectModeBtn.onclick=()=>setMode('connect');
 
   // ======= Render (boards) =======
-  function el(tag, attrs){ const e=document.createElementNS('http://www.w3.org/2000/svg',tag); for(const k in attrs){ e.setAttribute(k, attrs[k]); } return e; }
-  function nodeCenter(n){ const h=(n.type==='space' && n.height)?n.height:n.size; return {cx:n.x+n.size/2, cy:n.y+h/2}; }
+
+  function el(tag, attrs){
+    const e=document.createElementNS('http://www.w3.org/2000/svg',tag);
+    for(const k in attrs){ e.setAttribute(k, attrs[k]); }
+    return e;
+  }
+  function nodeCenter(n){
+    const h=(n.type==='space' && n.height)?n.height:n.size;
+    return {cx:n.x+n.size/2, cy:n.y+h/2};
+  }
 
   function applyBackground(){
     const w=getWorld(); if(!w) return;
@@ -411,7 +589,7 @@
     if(bg.type==='gradient'){
       stageBG.setAttribute('fill','url(#gradBG)');
     } else if(bg.type==='grid'){
-      stageBG.setAttribute('fill','#0b1120'); 
+      stageBG.setAttribute('fill','#0b1120');
     } else {
       stageBG.setAttribute('fill', bg.image? `url(${bg.image})` : '#0b1120');
     }
@@ -425,15 +603,30 @@
   stage.querySelector('defs').appendChild(grad);
 
   function render(){
-    const w=getWorld(); if(!w) return;
+    const w=getWorld();
+    if(!w){
+      nodesLayer.innerHTML='';
+      connectionsLayer.innerHTML='';
+      if(worldBadge){
+        worldBadge.textContent = 'World: – • Spaces: 0 • Players: 0 • Links: 0';
+      }
+      cheatsBadge.textContent = `Grid: ${showGrid?'On':'Off'} • Snap: ${snapOn?'On':'Off'}`;
+      return;
+    }
+
     applyBackground();
     nodesLayer.innerHTML=''; connectionsLayer.innerHTML='';
 
     // edges
     w.edges.forEach(e=>{
-      const a=w.nodes.find(n=>n.id===e.sourceId), b=w.nodes.find(n=>n.id===e.targetId); if(!a||!b) return;
+      const a=w.nodes.find(n=>n.id===e.sourceId),
+            b=w.nodes.find(n=>n.id===e.targetId);
+      if(!a||!b) return;
       const ca=nodeCenter(a), cb=nodeCenter(b);
-      const path=el('path',{class:`connector ${e.type||'normal'} ${selectedId===e.id?'selected':''}`, 'data-id':e.id});
+      const path=el('path',{
+        class:`connector ${e.type||'normal'} ${selectedId===e.id?'selected':''}`,
+        'data-id':e.id
+      });
       const dx=cb.cx-ca.cx, c1x=ca.cx+dx*0.2, c1y=ca.cy, c2x=cb.cx-dx*0.2, c2y=cb.cy;
       path.setAttribute('d', `M ${ca.cx} ${ca.cy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${cb.cx} ${cb.cy}`);
       path.addEventListener('click', ev=>{ ev.stopPropagation(); select(e.id, 'edge'); });
@@ -441,45 +634,109 @@
 
       if((e.label||'').trim()){
         const midX=(ca.cx+cb.cx)/2, midY=(ca.cy+cb.cy)/2;
-        const tt=el('text',{x:midX, y:midY-6, 'text-anchor':'middle', fill:'#cfe7ff', 'font-size':'13', style:'pointer-events:none'}); tt.textContent=e.label; connectionsLayer.appendChild(tt);
+        const tt=el('text',{
+          x:midX, y:midY-6, 'text-anchor':'middle',
+          fill:'#cfe7ff', 'font-size':'13', style:'pointer-events:none'
+        });
+        tt.textContent=e.label;
+        connectionsLayer.appendChild(tt);
       }
     });
 
     // nodes
     w.nodes.forEach(n=>{
-      const g=el('g',{class:'node'+(selectedId===n.id?' selected':''), 'data-id':n.id, transform:`translate(${n.x},${n.y})`});
+      const g=el('g',{
+        class:'node'+(selectedId===n.id?' selected':''),
+        'data-id':n.id,
+        transform:`translate(${n.x},${n.y})`
+      });
 
       if(n.type==='player'){
-        const outline=el('circle',{cx:n.size/2, cy:n.size/2, r:n.size/2+6, fill:'none', stroke:'#2a3558','stroke-width':'2', class:'outline'}); g.appendChild(outline);
-        const shadow=el('circle',{cx:n.size/2, cy:n.size/2, r:n.size/2, class:'shadow', fill:'#0f172a'}); g.appendChild(shadow);
-        const clipId='clip-'+n.id; const cp=el('clipPath',{id:clipId}); cp.appendChild(el('circle',{cx:n.size/2, cy:n.size/2, r:n.size/2})); stage.querySelector('defs')?.appendChild(cp);
-        const img=el('image',{x:0,y:0,width:n.size,height:n.size,'clip-path':`url(#${clipId})`}); img.setAttributeNS('http://www.w3.org/1999/xlink','href', n.imageData||''); g.appendChild(img);
-        if(n.name){ const label=el('text',{x:n.size/2,y:n.size+20,'text-anchor':'middle',fill:'#cfe7ff','font-size':'14'}); label.textContent=n.name; g.appendChild(label); }
-        g.appendChild(el('circle',{class:'hit',cx:n.size/2,cy:n.size/2,r:n.size/2+8}));
+        const outline=el('circle',{
+          cx:n.size/2, cy:n.size/2, r:n.size/2+6,
+          fill:'none', stroke:'#2a3558','stroke-width':'2', class:'outline'
+        });
+        g.appendChild(outline);
+
+        const shadow=el('circle',{
+          cx:n.size/2, cy:n.size/2, r:n.size/2,
+          class:'shadow', fill:'#0f172a'
+        });
+        g.appendChild(shadow);
+
+        const clipId='clip-'+n.id;
+        const cp=el('clipPath',{id:clipId});
+        cp.appendChild(el('circle',{cx:n.size/2, cy:n.size/2, r:n.size/2}));
+        stage.querySelector('defs')?.appendChild(cp);
+
+        const img=el('image',{
+          x:0,y:0,width:n.size,height:n.size,
+          'clip-path':`url(#${clipId})`
+        });
+        img.setAttributeNS('http://www.w3.org/1999/xlink','href', n.imageData||'');
+        g.appendChild(img);
+
+        if(n.name){
+          const label=el('text',{
+            x:n.size/2,y:n.size+20,'text-anchor':'middle',
+            fill:'#cfe7ff','font-size':'14'
+          });
+          label.textContent=n.name;
+          g.appendChild(label);
+        }
+
+        g.appendChild(el('circle',{
+          class:'hit',cx:n.size/2,cy:n.size/2,r:n.size/2+8
+        }));
 
       } else {
         // --- Space with title centered; color/icon/tags/counter/portal ---
         const pad=16, width=n.size, innerW=Math.max(10,width-pad*2);
-        const titleEl=el('text',{'text-anchor':'middle'}); titleEl.setAttribute('x', width/2);
-        const titleRes=fitTitle(titleEl, (n.icon? (n.icon+' ') : '')+(n.title||'Space'), innerW, 20, 12, 4);
+        const titleEl=el('text',{'text-anchor':'middle'});
+        titleEl.setAttribute('x', width/2);
+        const titleRes=fitTitle(
+          titleEl,
+          (n.icon? (n.icon+' ') : '')+(n.title||'Space'),
+          innerW,
+          20, 12, 4
+        );
         const titleH=(titleRes.fontSize+titleRes.lineGap)*titleRes.lines.length;
         const height=Math.max(width, Math.ceil(pad+titleH+pad)); n.height=height;
 
         const fillCol=n.color||'#121a2b', strokeCol='#33416b';
-        const rect=el('rect',{x:0,y:0,width,height,rx:12,ry:12,fill:fillCol,stroke:strokeCol,'stroke-width':'2',class:'shadow'});
-        const outline=el('rect',{x:-4,y:-4,width:width+8,height:height+8,rx:14,ry:14,fill:'none',stroke:'#2a3558','stroke-width':'2',class:'outline'});
+        const rect=el('rect',{
+          x:0,y:0,width,height,rx:12,ry:12,
+          fill:fillCol,stroke:strokeCol,'stroke-width':'2',class:'shadow'
+        });
+        const outline=el('rect',{
+          x:-4,y:-4,width:width+8,height:height+8,
+          rx:14,ry:14,fill:'none',stroke:'#2a3558',
+          'stroke-width':'2',class:'outline'
+        });
         g.appendChild(outline); g.appendChild(rect);
 
-        const titleTop=(height-titleH)/2; titleEl.setAttribute('y', titleTop+titleRes.fontSize); renderLines(titleEl,titleRes.lines,titleRes.lineGap); g.appendChild(titleEl);
+        const titleTop=(height-titleH)/2;
+        titleEl.setAttribute('y', titleTop+titleRes.fontSize);
+        renderLines(titleEl,titleRes.lines,titleRes.lineGap);
+        g.appendChild(titleEl);
 
         // tags chips
         if(n.tags && n.tags.length){
           const tagsG=el('g',{}); const chipY=height-10;
           let x=10;
           n.tags.slice(0,4).forEach(t=>{
-            const bg=el('rect',{x,y:chipY-16,rx:8,ry:8,height:18,fill:'#0f152a',stroke:'#2a3358','stroke-width':'1'});
-            const tt=el('text',{x:x+8,y:chipY-2,'font-size':'12',fill:'#cfe7ff'}); tt.textContent=t; const wTxt=measureTextWidth(tt,t)+16; bg.setAttribute('width',wTxt);
-            tagsG.appendChild(bg); tagsG.appendChild(tt); x+=wTxt+6;
+            const bg=el('rect',{
+              x,y:chipY-16,rx:8,ry:8,height:18,
+              fill:'#0f152a',stroke:'#2a3358','stroke-width':'1'
+            });
+            const tt=el('text',{
+              x:x+8,y:chipY-2,'font-size':'12',fill:'#cfe7ff'
+            });
+            tt.textContent=t;
+            const wTxt=measureTextWidth(tt,t)+16;
+            bg.setAttribute('width',wTxt);
+            tagsG.appendChild(bg); tagsG.appendChild(tt);
+            x+=wTxt+6;
           });
           g.appendChild(tagsG);
         }
@@ -487,12 +744,31 @@
         // counter pill (+/-)
         if(typeof n.count!=='number') n.count=0;
         const pill=el('g',{}); const px=width-14, py=14;
-        pill.appendChild(el('rect',{x:px-38,y:py-12,width:38,height:24,rx:12,ry:12,class:'counter'}));
-        const val=el('text',{x:px-19,y:py+4,'font-size':'12','text-anchor':'middle',class:'counter-text'}); val.textContent=String(n.count); pill.appendChild(val);
+        pill.appendChild(el('rect',{
+          x:px-38,y:py-12,width:38,height:24,rx:12,ry:12,class:'counter'
+        }));
+        const val=el('text',{
+          x:px-19,y:py+4,'font-size':'12',
+          'text-anchor':'middle',class:'counter-text'
+        });
+        val.textContent=String(n.count); pill.appendChild(val);
         // buttons
-        const minus=el('rect',{x:px-52,y:py-12,width:12,height:24,rx:6,ry:6,class:'counter-btn'}); const plus=el('rect',{x:px,y:py-12,width:12,height:24,rx:6,ry:6,class:'counter-btn'});
-        minus.addEventListener('click',ev=>{ ev.stopPropagation(); n.count=Math.max(0,(n.count||0)-1); pushHistory(); render(); });
-        plus.addEventListener('click',ev=>{ ev.stopPropagation(); n.count=(n.count||0)+1; pushHistory(); render(); });
+        const minus=el('rect',{
+          x:px-52,y:py-12,width:12,height:24,rx:6,ry:6,class:'counter-btn'
+        });
+        const plus=el('rect',{
+          x:px,y:py-12,width:12,height:24,rx:6,ry:6,class:'counter-btn'
+        });
+        minus.addEventListener('click',ev=>{
+          ev.stopPropagation();
+          n.count=Math.max(0,(n.count||0)-1);
+          pushHistory(); render();
+        });
+        plus.addEventListener('click',ev=>{
+          ev.stopPropagation();
+          n.count=(n.count||0)+1;
+          pushHistory(); render();
+        });
         pill.appendChild(minus); pill.appendChild(plus);
         // +/- glyphs
         const mnT=el('text',{x:px-46,y:py+4,'font-size':'14',fill:'#cfe7ff'}); mnT.textContent='-';
@@ -501,30 +777,63 @@
         g.appendChild(pill);
 
         // hit
-        g.appendChild(el('rect',{class:'hit',x:-8,y:-8,width:width+16,height:height+16,rx:16,ry:16}));
+        g.appendChild(el('rect',{
+          class:'hit',x:-8,y:-8,width:width+16,height:height+16,rx:16,ry:16
+        }));
 
         // rules popover on hover
         if((n.note||'').trim()){
           const lines=breakLines(titleEl,n.note,Math.max(220,innerW));
-          const lineH=14+4; const popW=Math.min(420, Math.max(...lines.map(s=>measureTextWidth(titleEl,s)))+32); const popH=lines.length*lineH+24;
-          const grp=el('g',{style:'display:none'}); const bg=el('rect',{x:(width-popW)/2,y:-popH-12,width:popW,height:popH,rx:10,ry:10,fill:'#0f152a',stroke:'#2a3358','stroke-width':'1.5'});
-          const tip=el('path',{d:`M ${width/2-8} -14 L ${width/2+8} -14 L ${width/2} -2 Z`, fill:'#0f152a', stroke:'#2a3358','stroke-width':'1.5'});
-          const tx=el('text',{'text-anchor':'middle',fill:'#d5e6ff','font-size':'14'}); tx.setAttribute('x', width/2); tx.setAttribute('y', -popH-12+14+2);
-          lines.forEach((ln,i)=>{ const t=document.createElementNS('http://www.w3.org/2000/svg','tspan'); t.setAttribute('x',width/2); t.setAttribute('y', parseFloat(tx.getAttribute('y')) + i*lineH); t.textContent=ln; tx.appendChild(t); });
-          grp.appendChild(bg); grp.appendChild(tip); grp.appendChild(tx); g.appendChild(grp);
-          g.addEventListener('mouseenter', ()=> grp.style.display='block'); g.addEventListener('mouseleave', ()=> grp.style.display='none');
+          const lineH=14+4;
+          const popW=Math.min(
+            420,
+            Math.max(...lines.map(s=>measureTextWidth(titleEl,s)))+32
+          );
+          const popH=lines.length*lineH+24;
+          const grp=el('g',{}); grp.style.display='none';
+          const bg=el('rect',{
+            x:(width-popW)/2,y:-popH-12,width:popW,height:popH,
+            rx:10,ry:10,fill:'#0f152a',stroke:'#2a3358','stroke-width':'1.5'
+          });
+          const tip=el('path',{
+            d:`M ${width/2-8} -14 L ${width/2+8} -14 L ${width/2} -2 Z`,
+            fill:'#0f152a', stroke:'#2a3358','stroke-width':'1.5'
+          });
+          const tx=el('text',{
+            'text-anchor':'middle',fill:'#d5e6ff','font-size':'14'
+          });
+          tx.setAttribute('x', width/2);
+          tx.setAttribute('y', -popH-12+14+2);
+          lines.forEach((ln,i)=>{
+            const t=document.createElementNS('http://www.w3.org/2000/svg','tspan');
+            t.setAttribute('x',width/2);
+            t.setAttribute('y', parseFloat(tx.getAttribute('y')) + i*lineH);
+            t.textContent=ln; tx.appendChild(t);
+          });
+          grp.appendChild(bg); grp.appendChild(tip); grp.appendChild(tx);
+          g.appendChild(grp);
+          g.addEventListener('mouseenter', ()=> grp.style.display='block');
+          g.addEventListener('mouseleave', ()=> grp.style.display='none');
         }
 
         // dblclick editor
         g.addEventListener('dblclick', ev=>{
           ev.stopPropagation();
-          const title = prompt('Space title:', n.title||'Space'); if(title!==null) n.title=title.trim();
-          const note = prompt('Rule (shows on hover):', n.note||''); if(note!==null) n.note=note.trim();
-          const color = prompt('Hex/keyword color (blank keeps):', n.color||''); if(color!==null) n.color=color.trim()||n.color;
-          const icon = prompt('Emoji/icon (optional):', n.icon||''); if(icon!==null) n.icon=icon.trim();
-          const tags = prompt('Tags (comma separated):', (n.tags||[]).join(',')); if(tags!==null) n.tags = tags.split(',').map(s=>s.trim()).filter(Boolean);
-          const portal = prompt('Portal to world (type exact world name or blank):', n.portalToName||''); 
-          if(portal!==null){ n.portalToName=portal.trim()||null; n.portalToWorldId = (worlds.find(w=>w.name===n.portalToName)||{}).id || null; }
+          const title = prompt('Space title:', n.title||'Space');
+          if(title!==null) n.title=title.trim();
+          const note = prompt('Rule (shows on hover):', n.note||'');
+          if(note!==null) n.note=note.trim();
+          const color = prompt('Hex/keyword color (blank keeps):', n.color||'');
+          if(color!==null) n.color=color.trim()||n.color;
+          const icon = prompt('Emoji/icon (optional):', n.icon||'');
+          if(icon!==null) n.icon=icon.trim();
+          const tags = prompt('Tags (comma separated):', (n.tags||[]).join(','));
+          if(tags!==null) n.tags = tags.split(',').map(s=>s.trim()).filter(Boolean);
+          const portal = prompt('Portal to world (type exact world name or blank):', n.portalToName||'');
+          if(portal!==null){
+            n.portalToName=portal.trim()||null;
+            n.portalToWorldId = (worlds.find(w=>w.name===n.portalToName)||{}).id || null;
+          }
           pushHistory(); render();
         });
 
@@ -544,37 +853,68 @@
 
     // update cheats badge
     cheatsBadge.textContent = `Grid: ${showGrid?'On':'Off'} • Snap: ${snapOn?'On':'Off'}`;
+
+    // update world badge
+    if(worldBadge){
+      const spaces = w.nodes.filter(n => n.type === 'space').length;
+      const players = w.nodes.filter(n => n.type === 'player').length;
+      const links = w.edges.length;
+      worldBadge.textContent =
+        `World: ${w.name || '–'} • Spaces: ${spaces} • Players: ${players} • Links: ${links}`;
+    }
+
     // show edge editor if edge selected
     const ee = (selectedId && (getWorld().edges.find(e=>e.id===selectedId))) || null;
     edgeEditor.style.display = ee ? 'block' : 'none';
-    if(ee){ edgeTypeSel.value = ee.type||'normal'; edgeLabelInput.value = ee.label||''; }
+    if(ee){
+      edgeTypeSel.value = ee.type||'normal';
+      edgeLabelInput.value = ee.label||'';
+    }
   }
 
   // ======= Edge editor actions =======
-  edgeSaveBtn.onclick = ()=>{ const w=getWorld(); const e=w.edges.find(x=>x.id===selectedId); if(!e) return;
-    e.type=edgeTypeSel.value; e.label=edgeLabelInput.value.trim(); pushHistory(); render();
+
+  edgeSaveBtn.onclick = ()=>{
+    const w=getWorld(); const e=w.edges.find(x=>x.id===selectedId); if(!e) return;
+    e.type=edgeTypeSel.value; e.label=edgeLabelInput.value.trim();
+    pushHistory(); render();
   };
 
   // ======= Selection / connect =======
+
   function select(id){ selectedId = id; render(); }
   function handleNodeClick(id){
     if(currentMode==='select'){ select(id); return; }
     if(currentMode==='connect'){
       const w=getWorld(); if(!w) return;
-      if(!connectFirst){ connectFirst=id; modeBadge.textContent='Mode: Connect — picked first. Click target.'; }
-      else if(connectFirst===id){ connectFirst=null; modeBadge.textContent='Mode: Connect'; }
-      else {
-        const edgeId=uid(); w.edges.push({id:edgeId, sourceId:connectFirst, targetId:id, type:'oneway', label:''});
-        connectFirst=null; modeBadge.textContent='Mode: Connect — link created!'; pushHistory(); select(edgeId);
+      if(!connectFirst){
+        connectFirst=id;
+        modeBadge.textContent='Mode: Connect — picked first. Click target.';
+      } else if(connectFirst===id){
+        connectFirst=null;
+        modeBadge.textContent='Mode: Connect';
+      } else {
+        const edgeId=uid();
+        w.edges.push({
+          id:edgeId, sourceId:connectFirst,
+          targetId:id, type:'oneway', label:''
+        });
+        connectFirst=null;
+        modeBadge.textContent='Mode: Connect — link created!';
+        pushHistory(); select(edgeId);
       }
     }
   }
 
   // ======= Dragging with snap =======
+
   let drag=null;
   function getSVGPoint(ev){
-    const p=stage.createSVGPoint(); const src=ev.touches?ev.touches[0]:ev;
-    p.x=src.clientX; p.y=src.clientY; const m=stage.getScreenCTM().inverse(); return p.matrixTransform(m);
+    const p=stage.createSVGPoint();
+    const src=ev.touches?ev.touches[0]:ev;
+    p.x=src.clientX; p.y=src.clientY;
+    const m=stage.getScreenCTM().inverse();
+    return p.matrixTransform(m);
   }
   function startDrag(ev){
     if(currentMode!=='select') return;
@@ -582,41 +922,55 @@
     const g=ev.currentTarget; const id=g.getAttribute('data-id'); select(id);
     const pt=getSVGPoint(ev); const w=getWorld(); const node=w.nodes.find(n=>n.id===id);
     drag={ id, startX:pt.x, startY:pt.y, nodeStartX:node.x, nodeStartY:node.y };
-    window.addEventListener('mousemove', onDrag); window.addEventListener('mouseup', endDrag);
-    window.addEventListener('touchmove', onDrag, {passive:false}); window.addEventListener('touchend', endDrag);
+    window.addEventListener('mousemove', onDrag);
+    window.addEventListener('mouseup', endDrag);
+    window.addEventListener('touchmove', onDrag, {passive:false});
+    window.addEventListener('touchend', endDrag);
   }
   function onDrag(ev){
-    if(!drag) return; ev.preventDefault();
+    if(!drag) return;
+    ev.preventDefault();
     const pt=getSVGPoint(ev); const w=getWorld(); const node=w.nodes.find(n=>n.id===drag.id);
-    let nx=drag.nodeStartX + (pt.x - drag.startX), ny=drag.nodeStartY + (pt.y - drag.startY);
-    if(snapOn){ const gs=(w.bg?.gridSize)||48; nx = Math.round(nx/gs)*gs; ny = Math.round(ny/gs)*gs; }
+    let nx=drag.nodeStartX + (pt.x - drag.startX),
+        ny=drag.nodeStartY + (pt.y - drag.startY);
+    if(snapOn){
+      const gs=(w.bg?.gridSize)||48;
+      nx = Math.round(nx/gs)*gs;
+      ny = Math.round(ny/gs)*gs;
+    }
     node.x=nx; node.y=ny; render();
   }
-  function endDrag(){ if(drag){ pushHistory(); } drag=null;
-    window.removeEventListener('mousemove', onDrag); window.removeEventListener('mouseup', endDrag);
-    window.removeEventListener('touchmove', onDrag); window.removeEventListener('touchend', endDrag);
+  function endDrag(){
+    if(drag){ pushHistory(); }
+    drag=null;
+    window.removeEventListener('mousemove', onDrag);
+    window.removeEventListener('mouseup', endDrag);
+    window.removeEventListener('touchmove', onDrag);
+    window.removeEventListener('touchend', endDrag);
   }
 
   // ======= Create nodes =======
 
-  // FIXED: Create a player regardless of image selection; if image chosen, load it; else create with no image.
+  // Create a player regardless of image selection; if image chosen, load it; else create with no image.
   addPlayerBtn.onclick=()=>{
     const w=getWorld(); if(!w) return;
 
     const add = (imgData)=>{
-      const n={id:uid(), type:'player',
+      const n={
+        id:uid(), type:'player',
         x:200+Math.random()*200, y:200+Math.random()*120,
         size:clamp(parseInt(playerSizeInput.value)||96,40,240),
         name:(playerNameInput.value||'').trim(),
         imageData:imgData||'',
-        stats:''};
+        stats:''
+      };
       w.nodes.push(n); pushHistory(); select(n.id);
     };
 
     // if there is already a file selected, use it once then clear
     if(playerImageInput.files && playerImageInput.files[0]){
       const file=playerImageInput.files[0]; const rd=new FileReader();
-      rd.onload=()=>{ add(rd.result); playerImageInput.value=''; }; // clear so we can reuse same filename later
+      rd.onload=()=>{ add(rd.result); playerImageInput.value=''; };
       rd.readAsDataURL(file);
       return;
     }
@@ -639,67 +993,174 @@
 
   addSpaceBtn.onclick=()=>{
     const w=getWorld(); if(!w) return;
-    const n={ id:uid(), type:'space', x:600+Math.random()*200, y:260+Math.random()*140, size:clamp(parseInt(spaceSizeInput.value)||180,60,260), height:null, title:(spaceTitleInput.value||'Space').trim(), note:(spaceNoteInput.value||'').trim(), color:'#121a2b', icon:'', tags:[], count:0 };
+    const n={
+      id:uid(), type:'space',
+      x:600+Math.random()*200, y:260+Math.random()*140,
+      size:clamp(parseInt(spaceSizeInput.value)||180,60,260),
+      height:null,
+      title:(spaceTitleInput.value||'Space').trim(),
+      note:(spaceNoteInput.value||'').trim(),
+      color:'#121a2b', icon:'', tags:[], count:0
+    };
     w.nodes.push(n); pushHistory(); select(n.id);
   };
 
   // ======= Delete / Export / Import =======
+
   function deleteSelection(){
     const w=getWorld(); if(!w||!selectedId) return;
     const ni=w.nodes.findIndex(n=>n.id===selectedId);
-    if(ni>=0){ const id=w.nodes[ni].id; w.nodes.splice(ni,1); w.edges=w.edges.filter(e=>e.sourceId!==id && e.targetId!==id); selectedId=null; pushHistory(); render(); return; }
-    const ei=w.edges.findIndex(e=>e.id===selectedId); if(ei>=0){ w.edges.splice(ei,1); selectedId=null; pushHistory(); render(); }
+    if(ni>=0){
+      const id=w.nodes[ni].id;
+      w.nodes.splice(ni,1);
+      w.edges=w.edges.filter(e=>e.sourceId!==id && e.targetId!==id);
+      selectedId=null; pushHistory(); render(); return;
+    }
+    const ei=w.edges.findIndex(e=>e.id===selectedId);
+    if(ei>=0){
+      w.edges.splice(ei,1); selectedId=null; pushHistory(); render();
+    }
   }
   deleteBtn.onclick=deleteSelection;
 
-  exportBtn.onclick=()=>{ const data={worlds, meta:{createdAt:new Date().toISOString(), version:8}}; const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='board-worlds.json'; a.click(); URL.revokeObjectURL(url); };
+  exportBtn.onclick=()=>{
+    const data={worlds, meta:{createdAt:new Date().toISOString(), version:8}};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='board-worlds.json'; a.click();
+    URL.revokeObjectURL(url);
+  };
   importInput.onchange=()=>{
-    const file=importInput.files[0]; if(!file) return; const rd=new FileReader();
+    const file=importInput.files[0]; if(!file) return;
+    const rd=new FileReader();
     rd.onload=()=>{
       try{
         const data=JSON.parse(rd.result);
         if(Array.isArray(data.worlds)) worlds=data.worlds;
-        else if(Array.isArray(data.nodes)&&Array.isArray(data.edges)) worlds=[{id:uid(), name:'Imported', nodes:data.nodes, edges:data.edges, wheels:[], bg:{type:'gradient',gridSize:48,image:null}, rules:''}];
+        else if(Array.isArray(data.nodes)&&Array.isArray(data.edges)){
+          worlds=[{
+            id:uid(), name:'Imported', nodes:data.nodes, edges:data.edges,
+            wheels:[], bg:{type:'gradient',gridSize:48,image:null}, rules:''
+          }];
+        }
         worlds.forEach(ensureWorldDefaults);
-        currentWorldId=worlds[0]?.id || null; if(!currentWorldId) newWorld('World 1'); selectedId=null; connectFirst=null; setMode('select'); pushHistory(); renderTabs(); render(); syncPrimaryTabs();
-        // hydrate rules textarea after import
+        currentWorldId=worlds[0]?.id || null;
+        if(!currentWorldId) newWorld('World 1');
+        selectedId=null; connectFirst=null; setMode('select');
+        pushHistory(); renderTabs(); render(); syncPrimaryTabs();
         if(primaryView==='rules') renderRulesPanel();
-      }catch(err){ alert('Import failed: '+err.message); }
+      }catch(err){
+        alert('Import failed: '+err.message);
+      }
     };
     rd.readAsText(file);
   };
 
   // ======= Autosave + Versions =======
-  function autosave(){ localStorage.setItem(SAVE_KEY, JSON.stringify({worlds, currentWorldId, showGrid, snapOn})); }
+
+  function autosave(){
+    localStorage.setItem(SAVE_KEY, JSON.stringify({worlds, currentWorldId, showGrid, snapOn}));
+  }
   setInterval(autosave, 5000);
-  snapshotBtn.onclick=()=>{ const list = JSON.parse(localStorage.getItem(VERSIONS_KEY)||'[]'); list.unshift({ ts: Date.now(), data: {worlds, currentWorldId, showGrid, snapOn} }); localStorage.setItem(VERSIONS_KEY, JSON.stringify(list.slice(0,25))); loadVersions(); };
+
+  snapshotBtn.onclick=()=>{
+    const list = JSON.parse(localStorage.getItem(VERSIONS_KEY)||'[]');
+    list.unshift({
+      ts: Date.now(),
+      data: {worlds, currentWorldId, showGrid, snapOn}
+    });
+    localStorage.setItem(VERSIONS_KEY, JSON.stringify(list.slice(0,25)));
+    loadVersions();
+  };
   function loadVersions(){
-    const list = JSON.parse(localStorage.getItem(VERSIONS_KEY)||'[]'); versionsSelect.innerHTML=''; list.forEach((v,i)=>{ const opt=document.createElement('option'); opt.value=i; const d=new Date(v.ts); opt.textContent = `${i+1}. ${d.toLocaleString()}`; versionsSelect.appendChild(opt); });
+    const list = JSON.parse(localStorage.getItem(VERSIONS_KEY)||'[]');
+    versionsSelect.innerHTML='';
+    list.forEach((v,i)=>{
+      const opt=document.createElement('option');
+      opt.value=i;
+      const d=new Date(v.ts);
+      opt.textContent = `${i+1}. ${d.toLocaleString()}`;
+      versionsSelect.appendChild(opt);
+    });
   }
   restoreBtn.onclick=()=>{
-    const list = JSON.parse(localStorage.getItem(VERSIONS_KEY)||'[]'); const idx=parseInt(versionsSelect.value)||0; const v=list[idx]; if(!v) return;
-    ({worlds, currentWorldId, showGrid, snapOn} = deepCopy(v.data)); worlds.forEach(ensureWorldDefaults); pushHistory(); renderTabs(); render(); syncPrimaryTabs();
+    const list = JSON.parse(localStorage.getItem(VERSIONS_KEY)||'[]');
+    const idx=parseInt(versionsSelect.value)||0;
+    const v=list[idx]; if(!v) return;
+    ({worlds, currentWorldId, showGrid, snapOn} = deepCopy(v.data));
+    worlds.forEach(ensureWorldDefaults);
+    pushHistory(); renderTabs(); render(); syncPrimaryTabs();
   };
 
   // load autosave
   (function(){
     const saved = localStorage.getItem(SAVE_KEY);
     if(saved){
-      try{ const s=JSON.parse(saved); worlds=s.worlds; currentWorldId=s.currentWorldId; showGrid=!!s.showGrid; snapOn=!!s.snapOn; worlds.forEach(ensureWorldDefaults); }catch(e){}
+      try{
+        const s=JSON.parse(saved);
+        worlds=s.worlds; currentWorldId=s.currentWorldId;
+        showGrid=!!s.showGrid; snapOn=!!s.snapOn;
+        worlds.forEach(ensureWorldDefaults);
+      }catch(e){}
     }
   })();
 
   // ======= Undo/Redo =======
-  function pushHistory(){ history.push(JSON.stringify({worlds,currentWorldId,showGrid,snapOn})); if(history.length>100) history.shift(); redoStack.length=0; autosave(); }
-  function undo(){ if(history.length<=1) return; const cur=history.pop(); redoStack.push(cur); const prev=history[history.length-1]; const s=JSON.parse(prev); worlds=s.worlds; currentWorldId=s.currentWorldId; showGrid=s.showGrid; snapOn=s.snapOn; worlds.forEach(ensureWorldDefaults); renderTabs(); render(); syncPrimaryTabs(); }
-  function redo(){ if(!redoStack.length) return; const nxt=redoStack.pop(); history.push(nxt); const s=JSON.parse(nxt); worlds=s.worlds; currentWorldId=s.currentWorldId; showGrid=s.showGrid; snapOn=s.snapOn; worlds.forEach(ensureWorldDefaults); renderTabs(); render(); syncPrimaryTabs(); }
+
+  function pushHistory(){
+    history.push(JSON.stringify({worlds,currentWorldId,showGrid,snapOn}));
+    if(history.length>100) history.shift();
+    redoStack.length=0;
+    autosave();
+  }
+  function undo(){
+    if(history.length<=1) return;
+    const cur=history.pop();
+    redoStack.push(cur);
+    const prev=history[history.length-1];
+    const s=JSON.parse(prev);
+    worlds=s.worlds; currentWorldId=s.currentWorldId;
+    showGrid=s.showGrid; snapOn=s.snapOn;
+    worlds.forEach(ensureWorldDefaults);
+    renderTabs(); render(); syncPrimaryTabs();
+  }
+  function redo(){
+    if(!redoStack.length) return;
+    const nxt=redoStack.pop();
+    history.push(nxt);
+    const s=JSON.parse(nxt);
+    worlds=s.worlds; currentWorldId=s.currentWorldId;
+    showGrid=s.showGrid; snapOn=s.snapOn;
+    worlds.forEach(ensureWorldDefaults);
+    renderTabs(); render(); syncPrimaryTabs();
+  }
 
   // ======= Background controls =======
-  bgTypeSel.onchange=()=>{ const w=getWorld(); w.bg.type=bgTypeSel.value; pushHistory(); render(); };
-  gridSizeInput.oninput=()=>{ const w=getWorld(); w.bg.gridSize=clamp(parseInt(gridSizeInput.value)||48,16,160); pushHistory(); render(); };
-  bgImageInput.onchange=()=>{ const w=getWorld(); const f=bgImageInput.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ w.bg.image=rd.result; w.bg.type='image'; bgTypeSel.value='image'; pushHistory(); render(); }; rd.readAsDataURL(f); };
+
+  bgTypeSel.onchange=()=>{
+    const w=getWorld(); if(!w) return;
+    w.bg.type=bgTypeSel.value;
+    pushHistory(); render();
+  };
+  gridSizeInput.oninput=()=>{
+    const w=getWorld(); if(!w) return;
+    w.bg.gridSize=clamp(parseInt(gridSizeInput.value)||48,16,160);
+    pushHistory(); render();
+  };
+  bgImageInput.onchange=()=>{
+    const w=getWorld(); if(!w) return;
+    const f=bgImageInput.files[0]; if(!f) return;
+    const rd=new FileReader();
+    rd.onload=()=>{
+      w.bg.image=rd.result; w.bg.type='image';
+      bgTypeSel.value='image'; pushHistory(); render();
+    };
+    rd.readAsDataURL(f);
+  };
 
   // ======= Primary tabs =======
+
   function syncPrimaryTabs(){
     boardsTab.classList.toggle('active', primaryView==='boards');
     playersTab.classList.toggle('active', primaryView==='players');
@@ -720,9 +1181,17 @@
   rulesTab.onclick =()=>{ primaryView='rules';  syncPrimaryTabs(); };
 
   // ======= Players panel =======
+
   function renderPlayersPanel(){
-    const w=getWorld(); playersGrid.innerHTML=''; const players=w.nodes.filter(n=>n.type==='player');
-    if(players.length===0){ const div=document.createElement('div'); div.className='panel-hint'; div.textContent='No players yet. Use “+ Player”.'; playersGrid.appendChild(div); return; }
+    const w=getWorld(); playersGrid.innerHTML='';
+    if(!w){ return; }
+    const players=w.nodes.filter(n=>n.type==='player');
+    if(players.length===0){
+      const div=document.createElement('div');
+      div.className='panel-hint';
+      div.textContent='No players yet. Use “+ Player”.';
+      playersGrid.appendChild(div); return;
+    }
     players.forEach(p=>{
       const card=document.createElement('div'); card.className='card';
       const header=document.createElement('div'); header.className='row';
@@ -730,122 +1199,314 @@
       const wrap=document.createElement('div'); wrap.className='grow';
       const lab=document.createElement('div'); lab.className='label'; lab.textContent='Player';
       const inp=document.createElement('input'); inp.type='text'; inp.value=p.name||''; inp.placeholder='Unnamed';
-      inp.oninput=debounce(()=>{ p.name=inp.value.trim(); render(); pushHistory(); }, 200);
-      wrap.appendChild(lab); wrap.appendChild(inp); header.appendChild(img); header.appendChild(wrap);
+      inp.oninput=debounce(()=>{
+        p.name=inp.value.trim(); render(); pushHistory();
+      }, 200);
+      wrap.appendChild(lab); wrap.appendChild(inp);
+      header.appendChild(img); header.appendChild(wrap);
       const sLab=document.createElement('div'); sLab.className='label'; sLab.textContent='Notes / Stats';
       const ta=document.createElement('textarea'); ta.value=p.stats||''; ta.placeholder='Type notes, points, inventory…';
       ta.oninput=debounce(()=>{ p.stats=ta.value; pushHistory(); }, 200);
-      card.appendChild(header); card.appendChild(sLab); card.appendChild(ta); playersGrid.appendChild(card);
+      card.appendChild(header); card.appendChild(sLab); card.appendChild(ta);
+      playersGrid.appendChild(card);
     });
   }
 
   // ======= Wheels panel =======
-  function worldWheels(){ const w=getWorld(); if(!w.wheels) w.wheels=[]; return w.wheels; }
-  function ensureWheel(){ const arr=worldWheels(); if(!arr.length){ currentWheelId=null; wheelList.innerHTML='<div class="panel-hint">No wheels yet. Click “+ New Wheel”.</div>'; drawWheel(); return null; } if(!currentWheelId || !arr.find(x=>x.id===currentWheelId)) currentWheelId=arr[0].id; return arr.find(x=>x.id===currentWheelId); }
+
+  function worldWheels(){
+    const w=getWorld(); if(!w.wheels) w.wheels=[];
+    return w.wheels;
+  }
+  function ensureWheel(){
+    const arr=worldWheels();
+    if(!arr.length){
+      currentWheelId=null;
+      wheelList.innerHTML='<div class="panel-hint">No wheels yet. Click “+ New Wheel”.</div>';
+      drawWheel();
+      return null;
+    }
+    if(!currentWheelId || !arr.find(x=>x.id===currentWheelId))
+      currentWheelId=arr[0].id;
+    return arr.find(x=>x.id===currentWheelId);
+  }
   function renderWheelsPanel(){
-    const arr=worldWheels(); wheelList.innerHTML=''; if(!arr.length){ ensureWheel(); return; }
+    const arr=worldWheels();
+    wheelList.innerHTML='';
+    if(!arr.length){ ensureWheel(); return; }
     arr.forEach(w=>{
-      const it=document.createElement('div'); it.className='wheel-item'+(w.id===currentWheelId?' active':'');
+      const it=document.createElement('div');
+      it.className='wheel-item'+(w.id===currentWheelId?' active':'');
       it.innerHTML=`<div>${escapeHTML(w.name||'Untitled')}</div><div class="panel-hint">${(w.entries||[]).length} items</div>`;
-      it.onclick=()=>{ currentWheelId=w.id; renderWheelsPanel(); }; wheelList.appendChild(it);
+      it.onclick=()=>{ currentWheelId=w.id; renderWheelsPanel(); };
+      wheelList.appendChild(it);
     });
     const cw=ensureWheel(); if(!cw) return;
-    wheelName.value=cw.name||''; wheelEntries.value=(cw.entries||[]).map(e=>e.label).join('\n'); spinResult.textContent=cw.lastResult?('Last: '+cw.lastResult):''; drawWheel();
+    wheelName.value=cw.name||'';
+    wheelEntries.value=(cw.entries||[]).map(e=>e.label).join('\n');
+    spinResult.textContent=cw.lastResult?('Last: '+cw.lastResult):'';
+    drawWheel();
   }
-  function randomColor(i,n){ const hue = (i*360/n + 20) % 360; return `hsl(${hue},70%,55%)`; }
-  function getCurrentWheel(){ return worldWheels().find(x=>x.id===currentWheelId)||null; }
+  function randomColor(i,n){
+    const hue = (i*360/n + 20) % 360;
+    return `hsl(${hue},70%,55%)`;
+  }
+  function getCurrentWheel(){
+    return worldWheels().find(x=>x.id===currentWheelId)||null;
+  }
   function drawWheel(){
-    const w=getCurrentWheel(); const W=wheelCanvas.width,H=wheelCanvas.height,r=Math.min(W,H)/2-6;
+    const w=getCurrentWheel();
+    const W=wheelCanvas.width,H=wheelCanvas.height,r=Math.min(W,H)/2-6;
     wctx.clearRect(0,0,W,H); wctx.save(); wctx.translate(W/2,H/2);
-    const entries=(w&&w.entries&&w.entries.length)?w.entries:[{label:'Add entries',color:'#33416b'}]; const n=entries.length; const base=(spinning?spinning.angle:0)||0;
-    for(let i=0;i<n;i++){ const a0=base+i*2*Math.PI/n, a1=base+(i+1)*2*Math.PI/n;
-      wctx.beginPath(); wctx.moveTo(0,0); wctx.arc(0,0,r,a0,a1); wctx.closePath(); wctx.fillStyle=entries[i].color||randomColor(i,n); wctx.fill(); wctx.strokeStyle='#0a1228'; wctx.lineWidth=2; wctx.stroke();
-      wctx.save(); const mid=(a0+a1)/2; wctx.rotate(mid); wctx.translate(r*0.65,0); wctx.rotate(Math.PI/2); wctx.fillStyle='#e6eef6'; wctx.font='16px Inter, Arial, sans-serif'; wctx.textAlign='center'; wctx.textBaseline='middle'; const text=entries[i].label; wctx.fillText(text.length>28? text.slice(0,27)+'…':text,0,0,r*0.6); wctx.restore();
+    const entries=(w&&w.entries&&w.entries.length)?w.entries:[{label:'Add entries',color:'#33416b'}];
+    const n=entries.length; const base=(spinning?spinning.angle:0)||0;
+    for(let i=0;i<n;i++){
+      const a0=base+i*2*Math.PI/n, a1=base+(i+1)*2*Math.PI/n;
+      wctx.beginPath(); wctx.moveTo(0,0); wctx.arc(0,0,r,a0,a1); wctx.closePath();
+      wctx.fillStyle=entries[i].color||randomColor(i,n); wctx.fill();
+      wctx.strokeStyle='#0a1228'; wctx.lineWidth=2; wctx.stroke();
+      wctx.save();
+      const mid=(a0+a1)/2; wctx.rotate(mid); wctx.translate(r*0.65,0); wctx.rotate(Math.PI/2);
+      wctx.fillStyle='#e6eef6'; wctx.font='16px Inter, Arial, sans-serif';
+      wctx.textAlign='center'; wctx.textBaseline='middle';
+      const text=entries[i].label;
+      wctx.fillText(text.length>28? text.slice(0,27)+'…':text,0,0,r*0.6);
+      wctx.restore();
     }
     // hub + pointer
-    wctx.beginPath(); wctx.arc(0,0,20,0,Math.PI*2); wctx.fillStyle='#0f172a'; wctx.fill(); wctx.strokeStyle='#7dd3fc'; wctx.lineWidth=2; wctx.stroke();
+    wctx.beginPath(); wctx.arc(0,0,20,0,Math.PI*2);
+    wctx.fillStyle='#0f172a'; wctx.fill();
+    wctx.strokeStyle='#7dd3fc'; wctx.lineWidth=2; wctx.stroke();
     wctx.restore();
-    wctx.beginPath(); wctx.moveTo(W/2,8); wctx.lineTo(W/2-14,28); wctx.lineTo(W/2+14,28); wctx.closePath(); wctx.fillStyle='#7dd3fc'; wctx.fill(); wctx.strokeStyle='#1b2b46'; wctx.stroke();
+    wctx.beginPath(); wctx.moveTo(W/2,8); wctx.lineTo(W/2-14,28); wctx.lineTo(W/2+14,28);
+    wctx.closePath(); wctx.fillStyle='#7dd3fc'; wctx.fill();
+    wctx.strokeStyle='#1b2b46'; wctx.stroke();
   }
   function spinWheel(){
-    const w=getCurrentWheel(); if(!w||!w.entries||!w.entries.length) return; if(spinning) return;
-    const n=w.entries.length; const targetIndex=Math.floor(Math.random()*n); const dur=clamp(parseFloat(spinSeconds.value)||5,1,20)*1000;
-    const slice=2*Math.PI/n; const mid=targetIndex*slice+slice/2; const targetAngle=-Math.PI/2 - mid + Math.PI*6;
-    const start=performance.now(); const startAngle=(spinning?spinning.angle:0)||0;
+    const w=getCurrentWheel(); if(!w||!w.entries||!w.entries.length) return;
+    if(spinning) return;
+    const n=w.entries.length;
+    const targetIndex=Math.floor(Math.random()*n);
+    const dur=clamp(parseFloat(spinSeconds.value)||5,1,20)*1000;
+    const slice=2*Math.PI/n;
+    const mid=targetIndex*slice+slice/2;
+    const targetAngle=-Math.PI/2 - mid + Math.PI*6;
+    const start=performance.now();
+    const startAngle=(spinning?spinning.angle:0)||0;
     spinning={angle:startAngle};
-    function step(ts){ const t=Math.min(1,(ts-start)/dur); const k=1-Math.pow(1-t,3); spinning.angle = startAngle + (targetAngle-startAngle)*k; drawWheel(); if(t<1) requestAnimationFrame(step); else { spinning=null; w.lastResult=w.entries[targetIndex].label; spinResult.textContent='Result: '+w.lastResult; pushHistory(); } }
+    function step(ts){
+      const t=Math.min(1,(ts-start)/dur);
+      const k=1-Math.pow(1-t,3);
+      spinning.angle = startAngle + (targetAngle-startAngle)*k;
+      drawWheel();
+      if(t<1) requestAnimationFrame(step);
+      else {
+        spinning=null;
+        w.lastResult=w.entries[targetIndex].label;
+        spinResult.textContent='Result: '+w.lastResult;
+        pushHistory();
+      }
+    }
     requestAnimationFrame(step);
   }
   saveWheelBtn.onclick=()=>{
     const arr=worldWheels(); let w=getCurrentWheel();
-    const name=wheelName.value.trim()||'Untitled'; const lines=wheelEntries.value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean); const entries=lines.map((label,i)=>({label,color:randomColor(i,Math.max(lines.length,1))}));
-    if(!w){ w={id:uid(), name, entries, lastResult:null}; arr.push(w); currentWheelId=w.id; } else { w.name=name; w.entries=entries; }
+    const name=wheelName.value.trim()||'Untitled';
+    const lines=wheelEntries.value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+    const entries=lines.map((label,i)=>({label,color:randomColor(i,Math.max(lines.length,1))}));
+    if(!w){
+      w={id:uid(), name, entries, lastResult:null};
+      arr.push(w); currentWheelId=w.id;
+    } else {
+      w.name=name; w.entries=entries;
+    }
     pushHistory(); renderWheelsPanel();
   };
-  newWheelBtn.onclick=()=>{ const arr=worldWheels(); const nw={id:uid(), name:'New Wheel '+(arr.length+1), entries:[{label:'Alice',color:'#7dd3fc'},{label:'Bob',color:'#6ee7b7'},{label:'Charlie',color:'#fca5a5'}], lastResult:null}; arr.push(nw); currentWheelId=nw.id; pushHistory(); renderWheelsPanel(); };
-  dupWheelBtn.onclick=()=>{ const w=getCurrentWheel(); if(!w) return; const arr=worldWheels(); const cp=deepCopy(w); cp.id=uid(); cp.name=w.name+' (Copy)'; arr.push(cp); currentWheelId=cp.id; pushHistory(); renderWheelsPanel(); };
-  delWheelBtn.onclick=()=>{ const arr=worldWheels(); const idx=arr.findIndex(x=>x.id===currentWheelId); if(idx<0) return; if(!confirm('Delete this wheel?')) return; arr.splice(idx,1); currentWheelId=null; pushHistory(); renderWheelsPanel(); };
+  newWheelBtn.onclick=()=>{
+    const arr=worldWheels();
+    const nw={id:uid(), name:'New Wheel '+(arr.length+1),
+              entries:[
+                {label:'Alice',color:'#7dd3fc'},
+                {label:'Bob',color:'#6ee7b7'},
+                {label:'Charlie',color:'#fca5a5'}
+              ],
+              lastResult:null};
+    arr.push(nw); currentWheelId=nw.id;
+    pushHistory(); renderWheelsPanel();
+  };
+  dupWheelBtn.onclick=()=>{
+    const w=getCurrentWheel(); if(!w) return;
+    const arr=worldWheels(); const cp=deepCopy(w);
+    cp.id=uid(); cp.name=w.name+' (Copy)';
+    arr.push(cp); currentWheelId=cp.id;
+    pushHistory(); renderWheelsPanel();
+  };
+  delWheelBtn.onclick=()=>{
+    const arr=worldWheels();
+    const idx=arr.findIndex(x=>x.id===currentWheelId);
+    if(idx<0) return;
+    if(!confirm('Delete this wheel?')) return;
+    arr.splice(idx,1); currentWheelId=null;
+    pushHistory(); renderWheelsPanel();
+  };
   colorsBtn.onclick=()=>saveWheelBtn.click();
-  shuffleBtn.onclick=()=>{ const lines=wheelEntries.value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean); for(let i=lines.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [lines[i],lines[j]]=[lines[j],lines[i]]; } wheelEntries.value=lines.join('\n'); saveWheelBtn.click(); };
+  shuffleBtn.onclick=()=>{
+    const lines=wheelEntries.value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+    for(let i=lines.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [lines[i],lines[j]]=[lines[j],lines[i]];
+    }
+    wheelEntries.value=lines.join('\n');
+    saveWheelBtn.click();
+  };
   spinBtn.onclick=spinWheel;
 
   // ======= Rules panel =======
+
   function renderRulesPanel(){
-    const w=getWorld(); rulesText.value = w.rules || '';
+    const w=getWorld(); if(!w) return;
+    rulesText.value = w.rules || '';
   }
   rulesText.addEventListener('input', debounce(()=>{
-    const w=getWorld(); w.rules = rulesText.value; pushHistory();
+    const w=getWorld(); if(!w) return;
+    w.rules = rulesText.value; pushHistory();
   }, 150));
 
   // ======= Keyboard =======
+
   window.addEventListener('keydown', e=>{
-    const tag=(document.activeElement&&document.activeElement.tagName)||''; if(['INPUT','TEXTAREA','SELECT'].includes(tag)) return;
-    if(e.key.toLowerCase()==='g'){ showGrid=!showGrid; pushHistory(); render(); }
-    if(e.key.toLowerCase()==='s'){ snapOn=!snapOn; pushHistory(); render(); }
-    if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='z'){ e.preventDefault(); undo(); }
-    if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='y'){ e.preventDefault(); redo(); }
+    const tag=(document.activeElement&&document.activeElement.tagName)||'';
+    if(['INPUT','TEXTAREA','SELECT'].includes(tag)) return;
+    if(e.key.toLowerCase()==='g'){
+      showGrid=!showGrid; pushHistory(); render();
+    }
+    if(e.key.toLowerCase()==='s'){
+      snapOn=!snapOn; pushHistory(); render();
+    }
+    if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='z'){
+      e.preventDefault(); undo();
+    }
+    if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='y'){
+      e.preventDefault(); redo();
+    }
     if(e.key==='1'){ primaryView='boards'; syncPrimaryTabs(); }
     if(e.key==='2'){ primaryView='players'; syncPrimaryTabs(); }
     if(e.key==='3'){ primaryView='wheels';  syncPrimaryTabs(); }
     if(e.key==='4'){ primaryView='rules';   syncPrimaryTabs(); }
   });
 
+  // ======= Hotkeys modal wiring =======
+
+  if(hotkeysBtn && hotkeysModal){
+    const closeHotkeys = ()=>{
+      hotkeysModal.classList.remove('show');
+      hotkeysModal.setAttribute('aria-hidden','true');
+    };
+    hotkeysBtn.onclick=()=>{
+      hotkeysModal.classList.add('show');
+      hotkeysModal.setAttribute('aria-hidden','false');
+    };
+    hotkeysModal.addEventListener('click', e=>{
+      if(e.target === hotkeysModal) closeHotkeys();
+    });
+    window.addEventListener('keydown', e=>{
+      if(e.key === 'Escape' && hotkeysModal.classList.contains('show')){
+        closeHotkeys();
+      }
+    });
+  }
+
   // ======= Export PNG =======
+
   exportPngBtn.onclick=async ()=>{
     const svgEl = stage.cloneNode(true);
-    // hide helpers in export
     svgEl.querySelector('#stageGrid').setAttribute('opacity', showGrid? '1':'0');
     const xml = new XMLSerializer().serializeToString(svgEl);
     const svgBlob = new Blob([xml], {type:'image/svg+xml;charset=utf-8'});
     const url = URL.createObjectURL(svgBlob);
-    const img = new Image(); img.onload = ()=>{
-      const canvas = document.createElement('canvas'); canvas.width=2400; canvas.height=1400; const ctx=canvas.getContext('2d');
-      ctx.drawImage(img,0,0); const dataURL=canvas.toDataURL('image/png'); const a=document.createElement('a'); a.href=dataURL; a.download='board-world.png'; a.click(); URL.revokeObjectURL(url);
+    const img = new Image();
+    img.onload = ()=>{
+      const canvas = document.createElement('canvas');
+      canvas.width=2400; canvas.height=1400;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0);
+      const dataURL=canvas.toDataURL('image/png');
+      const a=document.createElement('a');
+      a.href=dataURL; a.download='board-world.png'; a.click();
+      URL.revokeObjectURL(url);
     };
     img.src = url;
   };
 
   // ======= Stage + keys =======
-  stage.addEventListener('click', ()=>{ selectedId=null; render(); });
+
+  stage.addEventListener('click', ()=>{
+    selectedId=null; render();
+  });
   window.addEventListener('keydown', (e)=>{
-    if((e.key==='Delete'||e.key==='Backspace') && !(document.activeElement && ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))){ deleteSelection(); }
+    if((e.key==='Delete'||e.key==='Backspace') &&
+       !(document.activeElement && ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))){
+      deleteSelection();
+    }
     if(e.key==='c' && (e.ctrlKey||e.metaKey)){ setMode('connect'); }
     if(e.key==='v' && (e.ctrlKey||e.metaKey)){ setMode('select'); }
-    if(e.key==='n' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); newWorld(); }
+    if(e.key==='n' && (e.ctrlKey||e.metaKey)){
+      e.preventDefault(); newWorld();
+    }
   });
 
   // ======= Seed / Init =======
+
   function seed(){
-    if(worlds.length){ renderTabs(); render(); syncPrimaryTabs(); loadVersions(); pushHistory(); return; }
-    const w1={ id:uid(), name:'World 1', nodes:[], edges:[], wheels:[], bg:{type:'gradient',gridSize:48,image:null}, rules:'' };
-    w1.nodes.push({id:uid(), type:'space', x:220, y:140, size:200, height:null, title:'Start', note:'Begin here', color:'#121a2b', icon:'⭐', tags:['start'], count:0});
-    w1.nodes.push({id:uid(), type:'space', x:540, y:340, size:200, height:null, title:'Challenge', note:'Hover for rule', color:'#121a2b', icon:'⚠️', tags:['challenge'], count:0});
-    w1.nodes.push({id:uid(), type:'player', x:900, y:200, size:96, name:'Player A', imageData:'', stats:''});
-    w1.nodes.push({id:uid(), type:'player', x:1060, y:360, size:96, name:'Player B', imageData:'', stats:''});
-    w1.wheels.push({id:uid(), name:'Default Wheel', entries:[{label:'Alice',color:'#7dd3fc'},{label:'Bob',color:'#6ee7b7'},{label:'Charlie',color:'#fca5a5'}], lastResult:null});
-    w1.edges.push({id:uid(), sourceId:w1.nodes[0].id, targetId:w1.nodes[1].id, type:'oneway', label:'Cost 1'});
-    const w2={ id:uid(), name:'World 2', nodes:[{id:uid(), type:'space', x:300, y:260, size:220, height:null, title:'Another Page', note:'Fresh canvas', color:'#121a2b', icon:'🗺️', tags:['zone'], count:0}], edges:[], wheels:[], bg:{type:'grid',gridSize:48,image:null}, rules:'' };
-    worlds=[w1,w2]; currentWorldId=w1.id; renderTabs(); render(); syncPrimaryTabs(); loadVersions(); pushHistory();
+    if(worlds.length){
+      renderTabs(); render(); syncPrimaryTabs(); loadVersions(); pushHistory();
+      return;
+    }
+    const w1={ id:uid(), name:'World 1',
+               nodes:[], edges:[], wheels:[],
+               bg:{type:'gradient',gridSize:48,image:null}, rules:'' };
+    w1.nodes.push({
+      id:uid(), type:'space', x:220, y:140, size:200, height:null,
+      title:'Start', note:'Begin here', color:'#121a2b',
+      icon:'⭐', tags:['start'], count:0
+    });
+    w1.nodes.push({
+      id:uid(), type:'space', x:540, y:340, size:200, height:null,
+      title:'Challenge', note:'Hover for rule', color:'#121a2b',
+      icon:'⚠️', tags:['challenge'], count:0
+    });
+    w1.nodes.push({
+      id:uid(), type:'player', x:900, y:200, size:96,
+      name:'Player A', imageData:'', stats:''
+    });
+    w1.nodes.push({
+      id:uid(), type:'player', x:1060, y:360, size:96,
+      name:'Player B', imageData:'', stats:''
+    });
+    w1.wheels.push({
+      id:uid(), name:'Default Wheel',
+      entries:[
+        {label:'Alice',color:'#7dd3fc'},
+        {label:'Bob',color:'#6ee7b7'},
+        {label:'Charlie',color:'#fca5a5'}
+      ],
+      lastResult:null
+    });
+    w1.edges.push({
+      id:uid(), sourceId:w1.nodes[0].id,
+      targetId:w1.nodes[1].id, type:'oneway', label:'Cost 1'
+    });
+    const w2={ id:uid(), name:'World 2',
+               nodes:[{
+                 id:uid(), type:'space', x:300, y:260, size:220, height:null,
+                 title:'Another Page', note:'Fresh canvas', color:'#121a2b',
+                 icon:'🗺️', tags:['zone'], count:0
+               }],
+               edges:[], wheels:[],
+               bg:{type:'grid',gridSize:48,image:null}, rules:'' };
+    worlds=[w1,w2];
+    currentWorldId=w1.id;
+    renderTabs(); render(); syncPrimaryTabs(); loadVersions(); pushHistory();
   }
   seed();
 

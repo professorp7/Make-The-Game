@@ -103,7 +103,7 @@
     border:1px solid var(--line);
     padding:8px 10px;
     border-radius:8px;
-    min-width:140px;
+    min-width:120px;
     font-size:13px;
   }
   textarea{width:100%; min-height:100px; resize:vertical}
@@ -364,6 +364,9 @@
     font-size:11px;
   }
 
+  @media (max-width:1100px){
+    .toolbar{grid-row-gap:6px}
+  }
   @media (max-width:900px){
     .wflex{grid-template-columns:1fr}
   }
@@ -377,7 +380,7 @@
       <button id="selectModeBtn" class="active">Select / Drag (V)</button>
       <button id="connectModeBtn">Connect (C)</button>
       <button id="shortcutsBtn">Shortcuts</button>
-      <span class="hint">Ctrl+X/C/V = cut / copy / paste • G = grid • S = snap</span>
+      <span class="hint">Ctrl+X/C/V cut-copy-paste • E = edit selected</span>
     </div>
 
     <div class="group">
@@ -394,11 +397,19 @@
       <button id="addSpaceBtn">+ Space</button>
       <input id="spaceTitle" type="text" placeholder="Space title" />
       <input id="spaceNote" type="text" placeholder="Rule (hover)" />
+      <select id="spaceKind" title="Space type">
+        <option value="normal">Normal</option>
+        <option value="start">Start</option>
+        <option value="gain">Gain</option>
+        <option value="lose">Lose</option>
+        <option value="draw">Draw</option>
+        <option value="random">Random</option>
+      </select>
       <input id="spaceSize" type="number" min="60" max="260" value="180" title="Width" />
     </div>
 
     <div class="group">
-      <button id="editSelectedBtn">Edit Selected</button>
+      <button id="editSelectedBtn">Edit Selected (E)</button>
       <button id="deleteBtn">Delete Selected</button>
       <button id="exportBtn">Export JSON</button>
       <label class="file-label">
@@ -426,7 +437,15 @@
         <input id="bgImageInput" class="file-input" type="file" accept="image/*" />
         Background Image…
       </label>
-      <span class="hint">Ctrl+Z/Y undo/redo • 1–4 switch tabs • C/V modes</span>
+      <span class="hint">G = grid • S = snap • Ctrl+Z/Y undo/redo • 1–4 tabs</span>
+    </div>
+
+    <!-- NEW: Turn / Phase controls -->
+    <div class="group">
+      <button id="turnMinusBtn">− Turn</button>
+      <span id="turnLabel" style="font-size:12px;color:var(--muted);min-width:70px;text-align:center">Turn: 1</span>
+      <button id="turnPlusBtn">+ Turn</button>
+      <input id="phaseInput" type="text" placeholder="Phase / Round name" />
     </div>
   </div>
 
@@ -467,7 +486,7 @@
     </svg>
     <div class="badge" id="modeBadge">Mode: Select / Drag</div>
     <div class="badge cheats" id="cheatsBadge">Grid: Off • Snap: Off</div>
-    <div class="badge world-badge" id="worldBadge">World: – • Spaces: 0 • Players: 0 • Links: 0</div>
+    <div class="badge world-badge" id="worldBadge">World: – • Turn: 1 • Spaces: 0 • Players: 0 • Links: 0</div>
     <div class="edge-editor" id="edgeEditor">
       <div class="row">
         <label>Type</label>
@@ -545,8 +564,12 @@
         <span class="shortcut-desc">Connect mode / Select &amp; Drag mode</span>
       </li>
       <li>
+        <span class="shortcut-keys"><kbd>E</kbd></span>
+        <span class="shortcut-desc">Edit selected space or player</span>
+      </li>
+      <li>
         <span class="shortcut-keys"><kbd>Ctrl</kbd>+<kbd>X</kbd> / <kbd>C</kbd> / <kbd>V</kbd></span>
-        <span class="shortcut-desc">Cut / Copy / Paste selected space or player</span>
+        <span class="shortcut-desc">Cut / Copy / Paste selected node</span>
       </li>
       <li>
         <span class="shortcut-keys"><kbd>G</kbd> / <kbd>S</kbd></span>
@@ -585,27 +608,51 @@
   // ======= DOM refs =======
   const stage = $('#stage'), nodesLayer = $('#nodesLayer'), connectionsLayer = $('#connectionsLayer');
   const stageBG = $('#stageBG'), stageGrid = $('#stageGrid');
-  const selectModeBtn = $('#selectModeBtn'), connectModeBtn = $('#connectModeBtn'), modeBadge = $('#modeBadge'), cheatsBadge = $('#cheatsBadge'), worldBadge = $('#worldBadge');
+  const selectModeBtn = $('#selectModeBtn'), connectModeBtn = $('#connectModeBtn'),
+        modeBadge = $('#modeBadge'), cheatsBadge = $('#cheatsBadge'), worldBadge = $('#worldBadge');
   const tabsBar = $('#worldTabs');
-  const boardsTab = $('#boardsTab'), playersTab = $('#playersTab'), wheelsTab = $('#wheelsTab'), rulesTab = $('#rulesTab');
-  const boardsView = $('#boardsView'), playersView = $('#playersView'), wheelsView = $('#wheelsView'), rulesView = $('#rulesView');
-  const addPlayerBtn = $('#addPlayerBtn'), playerImageInput = $('#playerImageInput'), playerNameInput = $('#playerName'), playerSizeInput = $('#playerSize');
-  const addSpaceBtn = $('#addSpaceBtn'), spaceTitleInput = $('#spaceTitle'), spaceNoteInput = $('#spaceNote'), spaceSizeInput = $('#spaceSize');
-  const editSelectedBtn = $('#editSelectedBtn'), deleteBtn = $('#deleteBtn'), exportBtn = $('#exportBtn'), importInput = $('#importInput');
-  const snapshotBtn = $('#snapshotBtn'), versionsSelect = $('#versionsSelect'), restoreBtn = $('#restoreBtn'), exportPngBtn = $('#exportPngBtn');
-  const bgTypeSel = $('#bgType'), gridSizeInput = $('#gridSize'), bgImageInput = $('#bgImageInput');
-  const shortcutsBtn = $('#shortcutsBtn'), shortcutsModal = $('#shortcutsModal'), shortcutsCloseBtn = $('#shortcutsCloseBtn');
+  const boardsTab = $('#boardsTab'), playersTab = $('#playersTab'),
+        wheelsTab = $('#wheelsTab'), rulesTab = $('#rulesTab');
+  const boardsView = $('#boardsView'), playersView = $('#playersView'),
+        wheelsView = $('#wheelsView'), rulesView = $('#rulesView');
+
+  const addPlayerBtn = $('#addPlayerBtn'), playerImageInput = $('#playerImageInput'),
+        playerNameInput = $('#playerName'), playerSizeInput = $('#playerSize');
+
+  const addSpaceBtn = $('#addSpaceBtn'), spaceTitleInput = $('#spaceTitle'),
+        spaceNoteInput = $('#spaceNote'), spaceKindInput = $('#spaceKind'),
+        spaceSizeInput = $('#spaceSize');
+
+  const editSelectedBtn = $('#editSelectedBtn'), deleteBtn = $('#deleteBtn'),
+        exportBtn = $('#exportBtn'), importInput = $('#importInput');
+
+  const snapshotBtn = $('#snapshotBtn'), versionsSelect = $('#versionsSelect'),
+        restoreBtn = $('#restoreBtn'), exportPngBtn = $('#exportPngBtn');
+
+  const bgTypeSel = $('#bgType'), gridSizeInput = $('#gridSize'),
+        bgImageInput = $('#bgImageInput');
+
+  const shortcutsBtn = $('#shortcutsBtn'), shortcutsModal = $('#shortcutsModal'),
+        shortcutsCloseBtn = $('#shortcutsCloseBtn');
+
+  const turnMinusBtn = $('#turnMinusBtn'), turnPlusBtn = $('#turnPlusBtn'),
+        turnLabel = $('#turnLabel'), phaseInput = $('#phaseInput');
 
   // Edge editor
-  const edgeEditor = $('#edgeEditor'), edgeTypeSel = $('#edgeTypeSel'), edgeLabelInput = $('#edgeLabel'), edgeSaveBtn = $('#edgeSave');
+  const edgeEditor = $('#edgeEditor'), edgeTypeSel = $('#edgeTypeSel'),
+        edgeLabelInput = $('#edgeLabel'), edgeSaveBtn = $('#edgeSave');
 
   // Player stats panel
   const playersGrid = $('#playersGrid');
 
   // Wheels panel
-  const wheelList = $('#wheelList'), newWheelBtn = $('#newWheelBtn'), dupWheelBtn = $('#dupWheelBtn'), delWheelBtn = $('#delWheelBtn');
-  const wheelName = $('#wheelName'), wheelEntries = $('#wheelEntries'), colorsBtn = $('#colorsBtn'), shuffleBtn = $('#shuffleBtn'), saveWheelBtn = $('#saveWheelBtn');
-  const wheelCanvas = $('#wheelCanvas'), spinBtn = $('#spinBtn'), spinSeconds = $('#spinSeconds'), spinResult = $('#spinResult');
+  const wheelList = $('#wheelList'), newWheelBtn = $('#newWheelBtn'),
+        dupWheelBtn = $('#dupWheelBtn'), delWheelBtn = $('#delWheelBtn');
+  const wheelName = $('#wheelName'), wheelEntries = $('#wheelEntries'),
+        colorsBtn = $('#colorsBtn'), shuffleBtn = $('#shuffleBtn'),
+        saveWheelBtn = $('#saveWheelBtn');
+  const wheelCanvas = $('#wheelCanvas'), spinBtn = $('#spinBtn'),
+        spinSeconds = $('#spinSeconds'), spinResult = $('#spinResult');
   const wctx = wheelCanvas.getContext('2d');
 
   // Rules panel
@@ -634,14 +681,20 @@
 
   // ======= Measuring text for SVG =======
   const measureHost = document.createElementNS('http://www.w3.org/2000/svg','text');
-  measureHost.setAttribute('visibility','hidden'); measureHost.setAttribute('opacity','0'); stage.appendChild(measureHost);
+  measureHost.setAttribute('visibility','hidden');
+  measureHost.setAttribute('opacity','0');
+  stage.appendChild(measureHost);
   function measureTextWidth(textEl, s){
     measureHost.setAttribute('font-size', textEl.getAttribute('font-size') || 14);
     measureHost.setAttribute('font-weight', textEl.getAttribute('font-weight') || '400');
     measureHost.setAttribute('font-family', getComputedStyle(document.body).fontFamily || 'Inter, Arial, sans-serif');
     measureHost.setAttribute('text-anchor', textEl.getAttribute('text-anchor') || 'start');
-    const t = document.createElementNS('http://www.w3.org/2000/svg','tspan'); t.textContent = s || ''; measureHost.appendChild(t);
-    const w = t.getComputedTextLength(); measureHost.removeChild(t); return w;
+    const t = document.createElementNS('http://www.w3.org/2000/svg','tspan');
+    t.textContent = s || '';
+    measureHost.appendChild(t);
+    const w = t.getComputedTextLength();
+    measureHost.removeChild(t);
+    return w;
   }
   function hyphenateWord(textEl, word, maxWidth){
     const parts = []; let start = 0;
@@ -723,8 +776,11 @@
     if(!w.wheels) w.wheels=[];
     if(!w.bg) w.bg={type:'gradient',gridSize:48,image:null};
     if(typeof w.rules!=='string') w.rules='';
+    if(typeof w.turn!=='number') w.turn = 1;
+    if(typeof w.phase!=='string') w.phase = '';
     (w.nodes||[]).forEach(n=>{
       if(n.type==='space' && typeof n.count!=='number') n.count=0;
+      if(n.type==='space' && !n.kind) n.kind='normal';
       if(n.type==='player' && n.stats===undefined) n.stats='';
     });
   }
@@ -760,7 +816,9 @@
       edges:[],
       wheels:[],
       bg:{type:'gradient', gridSize:48, image:null},
-      rules:''
+      rules:'',
+      turn:1,
+      phase:''
     };
     worlds.push(w);
     currentWorldId=w.id;
@@ -841,13 +899,34 @@
   grad.innerHTML = `<stop offset="0%" stop-color="#0f1720"/><stop offset="100%" stop-color="#020617"/>`;
   stage.querySelector('defs').appendChild(grad);
 
+  function kindColors(kind){
+    switch(kind){
+      case 'start': return {pill:'#16a34a', text:'#dcfce7'};
+      case 'gain':  return {pill:'#22c55e', text:'#ecfdf3'};
+      case 'lose':  return {pill:'#f97373', text:'#fee2e2'};
+      case 'draw':  return {pill:'#a855f7', text:'#f3e8ff'};
+      case 'random':return {pill:'#eab308', text:'#fefce8'};
+      default:      return {pill:'#1f2937', text:'#e5e7eb'};
+    }
+  }
+  function kindLabel(kind){
+    switch(kind){
+      case 'start': return 'Start';
+      case 'gain':  return '+ Gain';
+      case 'lose':  return '− Lose';
+      case 'draw':  return 'Draw';
+      case 'random':return 'Random';
+      default:      return '';
+    }
+  }
+
   function render(){
     const w=getWorld();
     if(!w){
       nodesLayer.innerHTML='';
       connectionsLayer.innerHTML='';
       cheatsBadge.textContent = `Grid: ${showGrid?'On':'Off'} • Snap: ${snapOn?'On':'Off'}`;
-      worldBadge.textContent = 'World: – • Spaces: 0 • Players: 0 • Links: 0';
+      worldBadge.textContent = 'World: – • Turn: 1 • Spaces: 0 • Players: 0 • Links: 0';
       return;
     }
     ensureWorldDefaults(w);
@@ -869,7 +948,7 @@
       const c1x=ca.cx+dx*0.2, c1y=ca.cy;
       const c2x=cb.cx-dx*0.2, c2y=cb.cy;
       path.setAttribute('d', `M ${ca.cx} ${ca.cy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${cb.cx} ${cb.cy}`);
-      path.addEventListener('click', ev=>{ ev.stopPropagation(); select(e.id, 'edge'); });
+      path.addEventListener('click', ev=>{ ev.stopPropagation(); select(e.id); });
       connectionsLayer.appendChild(path);
 
       if((e.label||'').trim()){
@@ -952,6 +1031,34 @@
         renderLines(titleEl,titleRes.lines,titleRes.lineGap);
         g.appendChild(titleEl);
 
+        // type pill
+        const kind = n.kind || 'normal';
+        const label = kindLabel(kind);
+        if(label){
+          const colors = kindColors(kind);
+          const pillW = Math.max(40, measureTextWidth(titleEl,label)+16);
+          const pill = el('rect',{
+            x:10,
+            y:10,
+            width:pillW,
+            height:18,
+            rx:9, ry:9,
+            fill:colors.pill,
+            stroke:'#020617',
+            'stroke-width':'1'
+          });
+          const text = el('text',{
+            x:10+pillW/2,
+            y:10+13,
+            'text-anchor':'middle',
+            'font-size':'11',
+            fill:colors.text
+          });
+          text.textContent = label;
+          g.appendChild(pill);
+          g.appendChild(text);
+        }
+
         // tags chips
         if(n.tags && n.tags.length){
           const tagsG=el('g',{}); const chipY=height-10;
@@ -991,6 +1098,30 @@
         const plT=el('text',{x:px+6,y:py+4,'font-size':'14',fill:'#cfe7ff'}); plT.textContent='+';
         pill.appendChild(mnT); pill.appendChild(plT);
         g.appendChild(pill);
+
+        // portal chip
+        if(n.portalToWorldId){
+          const portalRect = el('rect',{
+            x:width-38,
+            y:height-26,
+            width:28,
+            height:18,
+            rx:9, ry:9,
+            fill:'#0f172a',
+            stroke:'#38bdf8',
+            'stroke-width':'1'
+          });
+          const portalText = el('text',{
+            x:width-24,
+            y:height-13,
+            'text-anchor':'middle',
+            'font-size':'12',
+            fill:'#7dd3fc'
+          });
+          portalText.textContent='🌀';
+          g.appendChild(portalRect);
+          g.appendChild(portalText);
+        }
 
         // hit
         g.appendChild(el('rect',{class:'hit',x:-8,y:-8,width:width+16,height:height+16,rx:16,ry:16}));
@@ -1048,7 +1179,10 @@
     cheatsBadge.textContent = `Grid: ${showGrid?'On':'Off'} • Snap: ${snapOn?'On':'Off'}`;
     const spacesCount = w.nodes.filter(n=>n.type==='space').length;
     const playersCount = w.nodes.filter(n=>n.type==='player').length;
-    worldBadge.textContent = `World: ${w.name} • Spaces: ${spacesCount} • Players: ${playersCount} • Links: ${w.edges.length}`;
+    const phaseText = w.phase ? ` • Phase: ${w.phase}` : '';
+    worldBadge.textContent = `World: ${w.name} • Turn: ${w.turn||1}${phaseText} • Spaces: ${spacesCount} • Players: ${playersCount} • Links: ${w.edges.length}`;
+    turnLabel.textContent = `Turn: ${w.turn||1}`;
+    phaseInput.value = w.phase || '';
 
     // edge editor
     const ee = (selectedId && (getWorld().edges.find(e=>e.id===selectedId))) || null;
@@ -1152,7 +1286,7 @@
     window.removeEventListener('touchend', endDrag);
   }
 
-  // ======= Create nodes =======
+  // ======= Create / edit nodes =======
   function editSpaceNode(n){
     const title = prompt('Space title:', n.title||'Space');
     if(title!==null) n.title=title.trim();
@@ -1162,6 +1296,11 @@
     if(color!==null) n.color=color.trim()||n.color;
     const icon = prompt('Emoji/icon (optional):', n.icon||'');
     if(icon!==null) n.icon=icon.trim();
+    const kind = prompt('Type (normal/start/gain/lose/draw/random):', n.kind||'normal');
+    if(kind!==null){
+      const k = (kind||'').toLowerCase();
+      if(['normal','start','gain','lose','draw','random'].includes(k)) n.kind=k;
+    }
     const tags = prompt('Tags (comma separated):', (n.tags||[]).join(','));
     if(tags!==null) n.tags = tags.split(',').map(s=>s.trim()).filter(Boolean);
     const portal = prompt('Portal to world (type exact world name or blank):', n.portalToName||'');
@@ -1173,7 +1312,7 @@
     render();
   }
 
-  // FIXED: Create a player regardless of image selection
+  // Create player
   addPlayerBtn.onclick=()=>{
     const w=getWorld(); if(!w) return;
 
@@ -1216,8 +1355,10 @@
     playerImageInput.addEventListener('change', handler);
   };
 
+  // Create space
   addSpaceBtn.onclick=()=>{
     const w=getWorld(); if(!w) return;
+    const kind = spaceKindInput.value || 'normal';
     const n={
       id:uid(),
       type:'space',
@@ -1230,7 +1371,8 @@
       color:'#0b1120',
       icon:'',
       tags:[],
-      count:0
+      count:0,
+      kind
     };
     w.nodes.push(n);
     pushHistory();
@@ -1279,12 +1421,11 @@
       render();
       return;
     }
-    // if an edge is selected, focus edge editor already on screen
   }
   editSelectedBtn.onclick=editSelected;
 
   exportBtn.onclick=()=>{
-    const data={worlds, meta:{createdAt:new Date().toISOString(), version:9}};
+    const data={worlds, meta:{createdAt:new Date().toISOString(), version:10}};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
@@ -1309,7 +1450,9 @@
             edges:data.edges,
             wheels:[],
             bg:{type:'gradient',gridSize:48,image:null},
-            rules:''
+            rules:'',
+            turn:1,
+            phase:''
           }];
         }
         worlds.forEach(ensureWorldDefaults);
@@ -1722,18 +1865,38 @@
     select(tpl.id);
   }
 
+  // ======= Turn / Phase controls =======
+  turnMinusBtn.onclick = ()=>{
+    const w=getWorld(); if(!w) return;
+    w.turn = Math.max(1,(w.turn||1)-1);
+    pushHistory();
+    render();
+  };
+  turnPlusBtn.onclick = ()=>{
+    const w=getWorld(); if(!w) return;
+    w.turn = (w.turn||1)+1;
+    pushHistory();
+    render();
+  };
+  phaseInput.addEventListener('input', debounce(()=>{
+    const w=getWorld(); if(!w) return;
+    w.phase = phaseInput.value.trim();
+    pushHistory();
+    render();
+  }, 200));
+
   // ======= Keyboard =======
   window.addEventListener('keydown', e=>{
     const tag=(document.activeElement&&document.activeElement.tagName)||'';
     const inField=['INPUT','TEXTAREA','SELECT'].includes(tag);
 
-    // global hotkeys (only when not typing)
     if(!inField){
       const key = e.key.toLowerCase();
       if(key==='g'){ showGrid=!showGrid; pushHistory(); render(); }
       if(key==='s'){ snapOn=!snapOn; pushHistory(); render(); }
       if(key==='c'){ setMode('connect'); }
       if(key==='v'){ setMode('select'); }
+      if(key==='e'){ editSelected(); }
       if(key==='1'){ primaryView='boards'; syncPrimaryTabs(); }
       if(key==='2'){ primaryView='players'; syncPrimaryTabs(); }
       if(key==='3'){ primaryView='wheels';  syncPrimaryTabs(); }
@@ -1742,13 +1905,11 @@
       if((e.metaKey||e.ctrlKey) && key==='y'){ e.preventDefault(); redo(); }
       if((e.metaKey||e.ctrlKey) && key==='n'){ e.preventDefault(); newWorld(); }
 
-      // copy / cut / paste nodes
       if((e.metaKey||e.ctrlKey) && key==='c'){ e.preventDefault(); copySelectedNode(); }
       if((e.metaKey||e.ctrlKey) && key==='x'){ e.preventDefault(); cutSelectedNode(); }
       if((e.metaKey||e.ctrlKey) && key==='v'){ e.preventDefault(); pasteClipboard(); }
     }
 
-    // delete selection
     if((e.key==='Delete' || e.key==='Backspace') && !inField){
       e.preventDefault();
       deleteSelection();
@@ -1790,7 +1951,7 @@
     img.src = url;
   };
 
-  // ======= Stage + keys =======
+  // ======= Stage =======
   stage.addEventListener('click', ()=>{
     selectedId=null;
     render();
@@ -1806,7 +1967,7 @@
       pushHistory();
       return;
     }
-    const w1={ id:uid(), name:'World 1', nodes:[], edges:[], wheels:[], bg:{type:'gradient',gridSize:48,image:null}, rules:'' };
+    const w1={ id:uid(), name:'World 1', nodes:[], edges:[], wheels:[], bg:{type:'gradient',gridSize:48,image:null}, rules:'', turn:1, phase:'' };
     w1.nodes.push({
       id:uid(),
       type:'space',
@@ -1819,7 +1980,8 @@
       color:'#0b1120',
       icon:'⭐',
       tags:['start'],
-      count:0
+      count:0,
+      kind:'start'
     });
     w1.nodes.push({
       id:uid(),
@@ -1833,7 +1995,8 @@
       color:'#0b1120',
       icon:'⚠️',
       tags:['challenge'],
-      count:0
+      count:0,
+      kind:'gain'
     });
     w1.nodes.push({id:uid(), type:'player', x:900, y:200, size:96, name:'Player A', imageData:'', stats:''});
     w1.nodes.push({id:uid(), type:'player', x:1060, y:360, size:96, name:'Player B', imageData:'', stats:''});
@@ -1844,8 +2007,8 @@
     ], lastResult:null});
     w1.edges.push({id:uid(), sourceId:w1.nodes[0].id, targetId:w1.nodes[1].id, type:'oneway', label:'Cost 1'});
     const w2={ id:uid(), name:'World 2', nodes:[
-      {id:uid(), type:'space', x:300, y:260, size:220, height:null, title:'Another Page', note:'Fresh canvas', color:'#0b1120', icon:'🗺️', tags:['zone'], count:0}
-    ], edges:[], wheels:[], bg:{type:'grid',gridSize:48,image:null}, rules:'' };
+      {id:uid(), type:'space', x:300, y:260, size:220, height:null, title:'Another Page', note:'Fresh canvas', color:'#0b1120', icon:'🗺️', tags:['zone'], count:0, kind:'normal'}
+    ], edges:[], wheels:[], bg:{type:'grid',gridSize:48,image:null}, rules:'', turn:1, phase:'' };
     worlds=[w1,w2];
     currentWorldId=w1.id;
     worlds.forEach(ensureWorldDefaults);
